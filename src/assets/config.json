@@ -9,7 +9,8 @@
     "statisticsInterval": 0
   },
   "worker": {
-    "processType": "staticPool",
+    "processType": "workerSet",
+    "elementsPerWorker": "all",
     "elementStartDelay": 2000
   },
   "performanceStorage": {
