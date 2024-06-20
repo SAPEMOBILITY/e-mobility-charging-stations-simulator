@@ -10,8 +10,7 @@
   },
   "worker": {
     "processType": "staticPool",
-    "elementStartDelay": 2000,
-    "elementsPerWorker": "all"
+    "elementStartDelay": 2000
   },
   "performanceStorage": {
     "enabled": false,
