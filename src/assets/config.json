@@ -2,17 +2,19 @@
   "supervisionUrls": "",
   "supervisionUrlDistribution": "round-robin",
   "log": {
+    "level": "error",
     "file": "logs/combined.log",
     "errorFile": "logs/error.log",
-    "maxFiles": 7,
+    "maxFiles": 1,
     "statisticsInterval": 0
   },
   "worker": {
-    "processType": "workerSet",
+    "processType": "staticPool",
+    "elementStartDelay": 2000,
     "elementsPerWorker": "all"
   },
   "performanceStorage": {
-    "enabled": true,
+    "enabled": false,
     "type": "none"
   },
   "uiServer": {
@@ -27,7 +29,27 @@
   },
   "stationTemplateUrls": [
     {
-      "file": "schneider.station-template.json",
+      "file": "schneider.station-e2e-group1-1.json",
+      "numberOfStations": 1
+    },
+    {
+      "file": "schneider.station-e2e-group1-2.json",
+      "numberOfStations": 1
+    },
+    {
+      "file": "schneider.station-e2e-group2-1.json",
+      "numberOfStations": 1
+    },
+    {
+      "file": "schneider.station-e2e-group2-2.json",
+      "numberOfStations": 1
+    },
+    {
+      "file": "schneider.station-e2e-nogroup-1.json",
+      "numberOfStations": 1
+    },
+    {
+      "file": "schneider.station-e2e-nogroup-2.json",
       "numberOfStations": 1
     }
   ]
