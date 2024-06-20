@@ -11,7 +11,7 @@
   "worker": {
     "processType": "workerSet",
     "elementsPerWorker": "all",
-    "elementStartDelay": 2000
+    "elementAddDelay": 2000
   },
   "performanceStorage": {
     "enabled": false,
