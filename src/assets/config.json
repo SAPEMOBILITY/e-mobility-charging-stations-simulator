@@ -1,0 +1,36 @@
+{
+    "supervisionUrls": "",
+    "supervisionUrlDistribution": "round-robin",
+    "log": {
+      "level": "error",
+      "file": "logs/combined.log",
+      "errorFile": "logs/error.log",
+      "maxFiles": 1,
+      "statisticsInterval": 0
+    },
+    "worker": {
+      "processType": "workerSet",
+      "elementsPerWorker": "all",
+      "elementAddDelay": 2000
+    },
+    "performanceStorage": {
+      "enabled": false,
+      "type": "none"
+    },
+    "uiServer": {
+      "enabled": false,
+      "type": "ws",
+      "authentication": {
+        "enabled": true,
+        "type": "protocol-basic-auth",
+        "username": "admin",
+        "password": "admin"
+      }
+    },
+    "stationTemplateUrls": [
+      {
+        "file": "schneider.station-template.json",
+        "numberOfStations": 1
+      }
+    ]
+  }
