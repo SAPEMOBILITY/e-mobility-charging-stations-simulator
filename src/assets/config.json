@@ -13,10 +13,6 @@
     "elementsPerWorker": "all",
     "elementAddDelay": 2000
   },
-  "performanceStorage": {
-    "enabled": false,
-    "type": "none"
-  },
   "uiServer": {
     "enabled": false,
     "type": "ws",
