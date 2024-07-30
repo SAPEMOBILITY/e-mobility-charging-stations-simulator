@@ -10,7 +10,7 @@
   },
   "worker": {
     "processType": "workerSet",
-    "elementsPerWorker": "all",
+    "elementsPerWorker": 10,
     "elementAddDelay": 2000
   },
   "uiServer": {
