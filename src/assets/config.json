@@ -11,7 +11,7 @@
   "worker": {
     "processType": "workerSet",
     "elementsPerWorker": 10,
-    "elementAddDelay": 5000
+    "elementStartDelay": 2000
   },
   "uiServer": {
     "enabled": false,
