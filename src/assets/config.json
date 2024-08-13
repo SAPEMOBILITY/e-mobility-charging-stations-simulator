@@ -47,6 +47,10 @@
     {
       "file": "schneider.station-e2e-nogroup-2.json",
       "numberOfStations": 1
+    },
+    {
+      "file": "schneider.station-e2e-dpp-1.json",
+      "numberOfStations": 1
     }
   ]
 }
