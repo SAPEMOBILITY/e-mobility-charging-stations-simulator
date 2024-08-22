@@ -1,5 +1,6 @@
 # config
 src/assets/config*.json
+!src/assets/config.json
 !src/assets/config-template.json
 src/scripts/scriptConfig.json
 src/assets/*idtags*.json
@@ -7,6 +8,7 @@ src/assets/*idtags*.json
 mikro-orm.config*.ts
 !mikro-orm.config-template.ts
 manifest*.yml
+!manifest.yml
 !manifest-cf-template.yml
 
 ### Git ###
