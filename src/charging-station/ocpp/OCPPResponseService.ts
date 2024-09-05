@@ -2,13 +2,14 @@ import _Ajv, { type ValidateFunction } from 'ajv'
 import _ajvFormats from 'ajv-formats'
 
 import type { ChargingStation } from '../../charging-station/index.js'
-import { OCPPError } from '../../exception/index.js'
 import type {
   IncomingRequestCommand,
   JsonType,
   OCPPVersion,
-  RequestCommand
+  RequestCommand,
 } from '../../types/index.js'
+
+import { OCPPError } from '../../exception/index.js'
 import { Constants, logger } from '../../utils/index.js'
 import { ajvErrorsToErrorType } from './OCPPServiceUtils.js'
 type Ajv = _Ajv.default
@@ -19,26 +20,27 @@ const ajvFormats = _ajvFormats.default
 const moduleName = 'OCPPResponseService'
 
 export abstract class OCPPResponseService {
-  private static instance: OCPPResponseService | null = null
-  private readonly version: OCPPVersion
+  private static instance: null | OCPPResponseService = null
   protected readonly ajv: Ajv
   protected readonly ajvIncomingRequest: Ajv
+  protected emptyResponseHandler = Constants.EMPTY_FUNCTION
   protected abstract payloadValidateFunctions: Map<RequestCommand, ValidateFunction<JsonType>>
+  private readonly version: OCPPVersion
   public abstract incomingRequestResponsePayloadValidateFunctions: Map<
-  IncomingRequestCommand,
-  ValidateFunction<JsonType>
+    IncomingRequestCommand,
+    ValidateFunction<JsonType>
   >
 
   protected constructor (version: OCPPVersion) {
     this.version = version
     this.ajv = new Ajv({
       keywords: ['javaType'],
-      multipleOfPrecision: 2
+      multipleOfPrecision: 2,
     })
     ajvFormats(this.ajv)
     this.ajvIncomingRequest = new Ajv({
       keywords: ['javaType'],
-      multipleOfPrecision: 2
+      multipleOfPrecision: 2,
     })
     ajvFormats(this.ajvIncomingRequest)
     this.responseHandler = this.responseHandler.bind(this)
@@ -52,6 +54,7 @@ export abstract class OCPPResponseService {
     return OCPPResponseService.instance as T
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   protected validateResponsePayload<T extends JsonType>(
     chargingStation: ChargingStation,
     commandName: RequestCommand,
@@ -76,8 +79,7 @@ export abstract class OCPPResponseService {
     )
   }
 
-  protected emptyResponseHandler = Constants.EMPTY_FUNCTION
-
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   public abstract responseHandler<ReqType extends JsonType, ResType extends JsonType>(
     chargingStation: ChargingStation,
     commandName: RequestCommand,

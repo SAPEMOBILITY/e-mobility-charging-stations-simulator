@@ -1,6 +1,256 @@
 # Changelog
 
-## [v1.3.6](https://github.com/sap/e-mobility-charging-stations-simulator/compare/v1.3.5...v1.3.6)
+## [1.5.1](https://github.com/SAP/e-mobility-charging-stations-simulator/compare/simulator@v1.5.0...simulator@v1.5.1) (2024-07-30)
+
+### ✨ Polish
+
+- cleanup eslint configuration ([31dab31](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/31dab314ef8b2f785e8074218e1889792752049a))
+- move buidling, bundling, ... scripts into a directory ([bf30bb2](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/bf30bb229a6296e16bd4aab4cf7285f7dd187288))
+- silence two linter errors ([664ba1d](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/664ba1dde7b64ea9f9a262a31dec9aa91c6a92f3))
+- **test:** code cleanups ([7edfbc1](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/7edfbc133ab8b7d617cbb1e4fbda4acd4c63800d))
+
+### 🧪 Tests
+
+- add checkConfiguration() helper test ([243a494](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/243a494b9598b7aa85f9b5cdca067cd5fd4f5b06))
+- add more charging station helpers tests ([e01619b](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/e01619ba83f630b55890f18e1adbc561ef95fd50))
+- add some tests for charging station helpers ([df59920](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/df5992062c1e0975e1e159f7fa7b81bcc263bd27))
+
+### 📚 Documentation
+
+- add OCPP 2 mock server component to issue templates ([a95db78](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/a95db7832890d86af2eb75ffe39f3baad686eb09))
+
+### 🤖 Automation
+
+- **ci:** reenabled auto code formating and linting on simulator ([1e4b13c](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/1e4b13ce2da1be9ee2437dd057d477309168b716))
+- **ci:** reenabled linting on web ui code ([5a1832c](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/5a1832ce790d0398fa031e738db47eb94fa975ec))
+- **deps-dev:** bump @types/ws from 8.5.11 to 8.5.12 ([#1113](https://github.com/SAP/e-mobility-charging-stations-simulator/issues/1113)) ([1e10f26](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/1e10f2640989a05281874950de452b76fc57d59a))
+- **deps-dev:** bump eslint-plugin-jsdoc from 48.8.3 to 48.9.2 ([#1112](https://github.com/SAP/e-mobility-charging-stations-simulator/issues/1112)) ([79e727f](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/79e727f19f927ee2532ff95337a363b8ee594bbb))
+- **deps-dev:** bump eslint-plugin-jsdoc from 48.9.2 to 48.10.1 ([#1115](https://github.com/SAP/e-mobility-charging-stations-simulator/issues/1115)) ([9cd5283](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/9cd5283ad66aeefacdcf3b7df7c8685e6df83d6b))
+- **deps-dev:** bump husky from 9.1.3 to 9.1.4 ([#1114](https://github.com/SAP/e-mobility-charging-stations-simulator/issues/1114)) ([c398be4](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/c398be430ad2d387e8982af00e54fc89e2b0db8e))
+
+## [1.5.0](https://github.com/SAP/e-mobility-charging-stations-simulator/compare/simulator@v1.4.2...simulator@v1.5.0) (2024-07-25)
+
+### 🚀 Features
+
+- add initial node sea support ([f6e18e3](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/f6e18e33b68a67239eba3f4d873172a491283d00))
+
+### 🐞 Bug Fixes
+
+- ensure OCPP payload validation report error details ([45087a8](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/45087a81ca7dda0b6e72897acd1391d859026961))
+
+### ✨ Polish
+
+- npx -&gt; pnpm dlx where appropriates ([bf25e53](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/bf25e531346a2e0579cb14d1d7c1da45dbb0aa08))
+- permit build code to run with other JS runtime ([456b7f2](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/456b7f2d7fc934d306e948e906c847417432009b))
+- refine OCPP PDU validation error messages ([5827ccc](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/5827ccc27d6c46f82df4e42a5707cfa19b550442))
+- refine station information validation error message ([915c88d](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/915c88d593292e7a47c92868e4b2d3752cce4dcd))
+- validate station information at CS init ([b55f94b](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/b55f94b6ac5dee58f38d13781b4345c4cc43f349))
+
+### 🧪 Tests
+
+- fix clone() test ([53ec800](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/53ec800a644f89a299cede7a89dd8a7b05959797))
+
+### 📚 Documentation
+
+- **README.md:** refine volta installation on windows ([fad9e72](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/fad9e7271b22c74fe6eb67e939090cf529a2b249))
+
+### 🤖 Automation
+
+- **ci:** fix autofix GH action ([c033310](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/c03331039ff7a080a3456d5a88fb7b18d505df7f))
+- **deps-dev:** bump @types/node from 20.14.11 to 20.14.12 ([#1106](https://github.com/SAP/e-mobility-charging-stations-simulator/issues/1106)) ([fb46a87](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/fb46a877f5c2b880759b9e70a08092510a7cb473))
+- **deps-dev:** bump @vitejs/plugin-vue from 5.0.5 to 5.1.0 ([#1105](https://github.com/SAP/e-mobility-charging-stations-simulator/issues/1105)) ([d36c4c8](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/d36c4c840ab5ac7a9c7fe6abbd2ae01844cb981e))
+- **deps-dev:** bump @vitest/coverage-v8 from 2.0.1 to 2.0.2 ([bbdb386](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/bbdb3861ed14ea52669231e5d372add76c50d65e))
+- **deps-dev:** bump eslint-plugin-jsdoc from 48.5.2 to 48.6.0 ([fd091c8](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/fd091c8cd219780ff650859e7b4506180f436861))
+- **deps-dev:** bump glob from 10.4.3 to 11.0.0 ([cff23bd](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/cff23bd9ab0f9ca92bc2d4721bf454b00a54daf0))
+- **deps-dev:** bump husky from 9.0.11 to 9.1.0 ([#1091](https://github.com/SAP/e-mobility-charging-stations-simulator/issues/1091)) ([e74759d](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/e74759d1c5cc66ef325b75bae39cc930ae33eb92))
+- **deps-dev:** bump rimraf from 5.0.8 to 6.0.0 ([207408c](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/207408cf661a7b8a1d35f8a9aa5ff02104fcd8ba))
+- **deps-dev:** bump typescript-eslint from 7.16.0 to 7.16.1 ([a60a99d](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/a60a99dce05328466e9a631ba83a9d527f3b4548))
+- **deps-dev:** bump vitest from 2.0.1 to 2.0.2 ([#1082](https://github.com/SAP/e-mobility-charging-stations-simulator/issues/1082)) ([f3d0d30](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/f3d0d30346974ec0e979d53d8a761ce254ba8bb0))
+- **deps:** bump github/combine-prs from 5.0.0 to 5.1.0 ([#1093](https://github.com/SAP/e-mobility-charging-stations-simulator/issues/1093)) ([55f4d38](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/55f4d386ab0e3903101c8a4b296b962cf71c9427))
+- **deps:** bump tar from 7.4.0 to 7.4.1 ([#1102](https://github.com/SAP/e-mobility-charging-stations-simulator/issues/1102)) ([0da233c](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/0da233c3b206d71bda0504908a1fd429547de923))
+- **deps:** bump vue from 3.4.33 to 3.4.34 ([#1107](https://github.com/SAP/e-mobility-charging-stations-simulator/issues/1107)) ([0bfef14](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/0bfef1423a926bd6054a25934957148d1d2fb4b0))
+
+## [1.4.2](https://github.com/SAP/e-mobility-charging-stations-simulator/compare/simulator@v1.4.1...simulator@v1.4.2) (2024-07-06)
+
+### 📚 Documentation
+
+- format 'Branching model' section in README.md ([3196db2](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/3196db2fbe206231fc0ee7d7947b19937a23ce42))
+
+### 🤖 Automation
+
+- **ci:** do not cancel workflow in case of autofix failure ([7e302de](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/7e302dea6f55838438fbe7bf0b9b8e70f3c3af21))
+- **ci:** fix release-please changelog after module renaming ([26058fd](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/26058fdb1d89d53caceceb1a981e3d48d73dcfae))
+- **ci:** rename module in changelog ([b7c140d](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/b7c140d7aad6d935d8941b07062011d4171596e9))
+- **deps:** bump poolifier from 4.0.15 to 4.0.16 ([8965c9e](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/8965c9e361bd771e59963c7ebd22b4d3fc0da04b))
+
+## [1.4.1](https://github.com/SAP/e-mobility-charging-stations-simulator/compare/simulator@v1.4.0...simulator@v1.4.1) (2024-07-05)
+
+### 🐞 Fixes
+
+- **ci:** fix release branches creation ([f727f02](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/f727f029cb974cffb38a2c569173730b6b808e3f))
+
+### ✨ Polish
+
+- **ci:** cleanup release-please configuration ([9880e6f](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/9880e6fed0333e17aad03f33e5ec4ee6307510ec))
+
+## [1.4.0](https://github.com/SAP/e-mobility-charging-stations-simulator/compare/simulator-v1.3.7...simulator@v1.4.0) (2024-07-04)
+
+### 🚀 Features
+
+- switch to release-please release manager ([2c02376](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/2c02376b6b17a6094c451b976275ed9eb2e1407b))
+
+### 🐞 Fixes
+
+- **ci:** fix release-please GH action run ([2a91b70](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/2a91b70f1cf33c64ee6f2f3be63bb9b5614cd319))
+- **ci:** silence release-please GH action warnings ([4dc1046](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/4dc10464e640d30a12ece043edcd72390cd1fb43))
+- ensure checks are run on release PR ([ce4b669](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/ce4b6698ed11fbee77caf6f448fef2db36240bcc))
+
+### 📚 Documentation
+
+- add branching model to README.md ([d295031](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/d295031fa6c94271ec551f32bba55f9cd99c998e))
+- add PR template ([8d9bfb0](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/8d9bfb088bc280dac892ca71f40bb085842eb7e7))
+
+### ✨ Polish
+
+- **test:** code cleanups ([b53037c](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/b53037c097bf8412831281229234e814aaae82a9))
+- **test:** typing cleanups ([65a1581](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/65a1581afd90a44096f1c0157abf4d5531d76fa5))
+
+### 🤖 Automation
+
+- bump volta node version ([abc5de8](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/abc5de857ea9e4a27f83d1c2fe60b4618775a540))
+- **ci:** fix component handling in release-please ([60414a7](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/60414a7e313e6ce7b3a9effd8a8cccb41555a04c))
+- **ci:** limit initial release PR to previous version commit ([e49bac4](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/e49bac45f5d513b19991fde86e7c234eb46ab85d))
+- **ci:** remove release-please workspace plugin ([94097a8](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/94097a8d456f51654a9b201e41309d9628638a81))
+- **deps-dev:** apply updates ([e92bd99](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/e92bd991d1f0c43442dd20d7b5e34fd30f9bb136))
+- **deps-dev:** apply updates ([a33e3b4](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/a33e3b4129757990b84af075cf9b678506937afb))
+- **deps:** bump ws from 8.17.1 to 8.18.0 ([4119c6e](https://github.com/SAP/e-mobility-charging-stations-simulator/commit/4119c6edbafb3fe813587770a2fb5a91c85a8340))
+
+## [v1.3.7](https://github.com/sap/e-mobility-charging-stations-simulator/compare/v1.3.6...v1.3.7)
+
+- fix: fix OCPP2 mock server command sending [`#1061`](https://github.com/sap/e-mobility-charging-stations-simulator/pull/1061)
+- Combined PRs [`#1064`](https://github.com/sap/e-mobility-charging-stations-simulator/pull/1064)
+- Fix GetBaseReport Implementation and Add Request Handlers and CLI Parsing Server-Side [`#1053`](https://github.com/sap/e-mobility-charging-stations-simulator/pull/1053)
+- build(deps-dev): bump eslint-plugin-jsdoc from 48.2.12 to 48.4.0 [`#1059`](https://github.com/sap/e-mobility-charging-stations-simulator/pull/1059)
+- build(deps): bump sonarsource/sonarcloud-github-action from 2.2.0 to 2.3.0 [`#1048`](https://github.com/sap/e-mobility-charging-stations-simulator/pull/1048)
+- build(deps): bump actions/setup-python from 4 to 5 [`#1043`](https://github.com/sap/e-mobility-charging-stations-simulator/pull/1043)
+- Add GetBaseReport Command Handling to OCPP 2.0.1 Server [`#1041`](https://github.com/sap/e-mobility-charging-stations-simulator/pull/1041)
+- build(deps-dev): apply updates [`11846be`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/11846be1d14c97fd648b9492f861e1ee6f84f2c5)
+- build(deps-dev): apply updates [`2177f6d`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/2177f6d759c2cacf2469d4c7b6de4f2caa7a08bc)
+- test: migrate ocpp server to poetry to ease usage [`c11be92`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/c11be92a38d40495df5ec37b9ff946993c4dc84f)
+- build(deps-dev): apply updates [`9d31316`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/9d31316ec2ba72f89f2709088ba8482137efa697)
+- build(deps-dev): apply updates [`e6f14eb`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/e6f14ebf2ecbe64a4f5d026632948c4a2f8b4d65)
+- build(deps): apply updates [`ede334c`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/ede334c888a1ffccb0ea420c1523e06120276df0)
+- refactor(ocpp-server): format code with black [`d4aa970`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/d4aa970003b5e5a012dceaa33d1905a170cb461b)
+- build(deps-dev): apply updates [`7f6b56b`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/7f6b56b555843a45f040f5b709b98725f38bed16)
+- build(deps): apply updates [`06b6085`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/06b60859cbfedab83c209fb2ecdbe0537daf7dfb)
+- test(ocpp-server): switch to ruff to assess coding style [`dfa4a58`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/dfa4a5842974c6de70aa04e84a303f1d10b4bb8b)
+- build(deps): apply updates [`5ebea52`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/5ebea52afe3ede727cb216e6708156738ced7e42)
+- build(deps-dev): apply updates [`6537ae8`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/6537ae8f2148496c326bbcd4fdf95dface14c8b8)
+- build(ci): silence linter [`4d8b5b9`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/4d8b5b9019b4853c97df80817dfb72e7f854b61a)
+- build(deps-dev): apply updates [`5ddbebe`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/5ddbebe972f979292d0e258d766702aa0fc1eb85)
+- fix(ocpp-server): add asyncio compatible timer implementation and use it [`cbfbfbc`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/cbfbfbc11f32acd3da4ae64aaa558b506d0de131)
+- build(deps-dev): apply updates [`69497ad`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/69497ade5b8f692ea0fa785a2fae2059798c9d9f)
+- build(deps-dev): apply updates [`d4c5e39`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/d4c5e39617edd8b9612d564ca693737381d356d9)
+- test: reformat ocpp server python using pep8 rules [`1a0d2c4`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/1a0d2c470d1b156381a9002155ffd6ff9a9f629d)
+- build(deps-dev): apply updates [`6c7388a`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/6c7388a4c4c47e9d19511b8e9b70b0f57d6dbd5f)
+- Add missing types for GetBaseReport payload handling [`fa16d38`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/fa16d389b8eb171e581c3fe5789602c54ac85ab1)
+- build(deps-dev): apply updates [`9388120`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/9388120364d5a2f3b9103f05802e1756d2dad04f)
+- build(deps-dev): apply updates [`12c0935`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/12c0935b3d52b06957d0c80ef4d5e361ea3aafa3)
+- test(ocpp-server): add tasks to format/lint code [`ac96356`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/ac96356cae880d404129e8cb56eeacdd712ea1d4)
+- fix: issue 39 [`299eb3f`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/299eb3fafb21481e38e963ff6080d0822ae6a3ae)
+- refactor: setup repo configuration to handle python code [`d6488e8`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/d6488e8da9634892f480dd4323a64d87716cbf13)
+- refactor: cleanup default params in error handlers [`64c14c9`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/64c14c99f9902d4e96f2a2cd404e536e0584a629)
+- build(deps-dev): apply updates [`a6a928b`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/a6a928b1e16fbc3537298c225829e29bf8eea12f)
+- feat: modified OCPP2.0 test [`7c945b4`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/7c945b4ac211aafb6e90645a0364c12d7373522e)
+- Related issue39 [`f937c17`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/f937c172eebbdfb2d90693806bc045e915bf828d)
+- build(deps-dev): apply updates [`7e7760d`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/7e7760d1bae2a948c88d008130714b2067fcc543)
+- build(deps-dev): apply updates [`a79c81a`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/a79c81afb8d0bc53368fcab7bb341f77ab9f84c0)
+- feat(ci): add autofix.ci action on PR [`a4beba2`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/a4beba2d2d81f4b122eceff72c2a495c27180011)
+- fix: modified mistakes [`b225460`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/b22546014db62ca65e14ecaec6ea62d2c986a4b6)
+- refactor(ocpp-server): add a few types [`c7f80bf`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/c7f80bf972e52fd1afa315ffdf02ff603f6b9e8b)
+- refactor: move more OCPP command sending code to charge point class [`4de4645`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/4de4645dcdfbd3512247c7272888def66f71d30d)
+- fix(ocpp-server): properly handle charge point disconnection [`7628b7e`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/7628b7e63d130ddc602ed3647abf36e8ae35f6dd)
+- build(deps-dev): bump ruff from 0.4.10 to 0.5.0 in /tests/ocpp-server [`2b8b04b`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/2b8b04bdc9838756c37fbe86a517a2b502c125ed)
+- build(ci): run autofix in a unique job [`8b17228`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/8b17228e91d57af035488d1939a07666e5d8649a)
+- [autofix.ci] apply automated fixes [`b794f42`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/b794f42e9d8f01fc21654ed4452df45a79f5f871)
+- build(deps-dev): apply updates [`0f1dc77`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/0f1dc770503395f8035b75fb0ae4ff394d1b5dfe)
+- refactor: move CLI options validation to main() [`93d9519`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/93d95199cbcad411feef0da6e9afff06c46c7e5b)
+- build(ocpp-server): apply updates [`8768034`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/87680344f2f32b45fa89d8ae3c46d3e28634e4bf)
+- chore: move configuration specific to ocpp-server to its folder [`b00abe8`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/b00abe8ebfc55f1029de151e21d2b66a08293a4e)
+- build(deps-dev): apply updates [`9daf701`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/9daf701f5321be7f7ab466026b43e4714d5c3f9d)
+- build(deps-dev): apply updates [`6d037fb`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/6d037fb64a050e2f7c368fabf7da9d0c56b7265e)
+- test: add ConfigurationData enums tests [`47a41cf`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/47a41cfff7de841a931f5694dbcddaf235e91bdd)
+- build(deps-dev): bump vite from 5.3.1 to 5.3.2 [`87170a8`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/87170a8e77a26d5f3156f4411cff1d0e2620992d)
+- docs: document volta usage for development [`17c9163`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/17c916369498726b5dff6145a6d50261f0cb90a0)
+- build(deps-dev): apply updates [`8df621e`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/8df621e643de566c4eae6608ed9cfcc8271bd3aa)
+- build(ci): add ocpp-server code linter check [`ffccbf2`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/ffccbf2287d74bfde06179427a1eabad986d1235)
+- [autofix.ci] apply automated fixes [`1f71f83`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/1f71f83fc5e112fd25fd9ce83af436fcba71ed68)
+- test: remove GetBaseReport ocpp server handler [`3bacab7`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/3bacab7a1e81110d4c416570e13658d2c07ce888)
+- chore(ocpp-server): refine ruff linter configuration [`a6fac14`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/a6fac14d419b2f278ce16d4505018d2ac8a179a1)
+- test(ocpp-server): add more request handlers [`5dd22b9`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/5dd22b9f9bed3b2cbef2ee24a5c7f4f1726a85d0)
+- build(deps): apply updates [`527e52c`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/527e52c5d10f3b8bf84fae1d05d254a053dc62cc)
+- build(deps-dev): apply updates [`936ba67`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/936ba6779d56dbb7ff50810f8ee5adf0a9845a89)
+- test(ocpp-server): keep track of connected CS [`a5c2d21`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/a5c2d21fa2d2bee31c329622e76cd8ac391ca37d)
+- build(deps-dev): apply updates [`b3e2979`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/b3e297931b16fbd02794e62bdea7077419e07097)
+- build: fix pnpm lock file [`757468b`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/757468bf17a0c5eb03ee9eb924ae5c34f8f4e5ca)
+- test(ocpp-server): add TransactionEvent handler [`22c4f1f`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/22c4f1fc7fe1dc966a280de7f66e2f9fe592fbd2)
+- chore(ocpp-server): refine ruff linter configuration [`ad8df5d`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/ad8df5d38dd7ef010f652a4e60f4af2c67e6d908)
+- [autofix.ci] apply automated fixes [`acf133c`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/acf133cd0efc14b1e45719a88dc57fac71bb1c90)
+- test: add clear cache implementation example in ocpp2 server [`a89844d`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/a89844d433370fc777a3a9d5ce29f7e8026b71a8)
+- test(ocpp-server): add RepeatTimer class to allow to emit OCPP messages on a regular [`aea4950`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/aea49501ed3c51f30a6d9c9a2f41ee4588cae313)
+- fix(ocpp-server): ensure the CLI options help is not truncated [`ba56e7c`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/ba56e7c9946964b7c28adb72cd54eeb805194f25)
+- refactor: silence linter [`52f298c`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/52f298cfa6812195ad89d58d15e3e469be52db57)
+- [autofix.ci] apply automated fixes [`b738a0f`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/b738a0fc1c620f3836d868235af16dfb61a91a50)
+- fix(ocpp-server): silence linter [`6c0215d`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/6c0215d2bf5a098aceed9e9d94d75d50ff2630db)
+- build(ci): cache python poetry deps [`52238c6`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/52238c635ec00feeb9b9300a0c99443a72e15925)
+- build(deps-dev): apply updates [`6a656e3`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/6a656e31e8c1c4204bb66fbc439b77232d230022)
+- build(deps-dev): apply updates [`842d677`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/842d677e39a455cee14efabb19110a3c4818a867)
+- build(ci): install pnpm deps only once [`56b900f`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/56b900ff755523df397b7da2a050471a48c91d57)
+- docs: refine README.md [`783b954`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/783b954595e60cfc5e90ddd749bc8578ec2512fe)
+- build(deps-dev): apply updates [`a387f9d`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/a387f9d902a1dc007108f2f632427cf008ea1bf2)
+- build: recommend vscode ruff extension for ocpp-server python code [`a951fc1`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/a951fc1b6194c0f65fd19ea62f119cd26283f2fd)
+- [autofix.ci] apply automated fixes [`f93800e`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/f93800e55130085e7ee3509a7952c5dd2315c146)
+- refactor(ci): cleanup GH actions [`657ddf9`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/657ddf9cc2c9fc8c81fd3da90803cd378987fd3a)
+- fix: fix ApplicationProtocolVersion type definition [`f2a9013`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/f2a90135692aac9beaeeb73efcb7e7aa093ec39a)
+- fix: issue 39 [`4e5c91a`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/4e5c91aef023b214716aeb6699edebd282cceeb9)
+- build(ocpp-server): sync poetry lock file [`cfb413a`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/cfb413a541334cbe3ea80fc111ccc44736442d58)
+- refactor(ci): cleanup GH actions [`fafff4e`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/fafff4ebf141074899e2a8590f5166542d626db5)
+- Update tests/ocpp-server/server.py [`b518537`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/b5185375d64bf123c5f12e165be4175f77dd8466)
+- Update tests/ocpp-server/server.py [`ba0a759`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/ba0a75922d7cba5f44b97eddc7b567f50ba920e2)
+- Update tests/ocpp-server/server.py [`0457819`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/04578196600a49d2f03710ded6ba0548cbbd87ad)
+- Update tests/ocpp-server/server.py [`39d32b7`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/39d32b7191ff76ffb277e6d116caa95e443d326c)
+- docs(ocpp-server): cleanup comment [`12925eb`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/12925ebc4afad719210d96b64571aa8bccad0fe5)
+- Merge dependabot/pip/tests/ocpp-server/ruff-0.5.0 into combined-prs-branch [`e17b6e8`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/e17b6e807babcf5ed7b53b03d4f3006960dfe671)
+- Merge dependabot/npm_and_yarn/vite-5.3.2 into combined-prs-branch [`85f0a4b`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/85f0a4b3b5c7f47c06be1be8cbf51f3fcb88acf3)
+- [autofix.ci] apply automated fixes [`e1702c3`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/e1702c3295a8b068eed8c7cf616a7996037e3651)
+- fix: corrected a error [`d4eddfa`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/d4eddfaee92738e8d33f7cca0acc724b152501d4)
+- refactor(ocpp-server): refine log message [`118332f`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/118332f42f7f6fb80b895794fc5f1179f78c294c)
+- Update tests/ocpp-server/server.py [`891ae31`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/891ae31da6a7a04ad29e46f3d2d2377f55c51932)
+- Update tests/ocpp-server/server.py [`7068f7f`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/7068f7f35112cf086e9b75ff1ee5f9fc2c1b0bb2)
+- Update tests/ocpp-server/server.py [`12798af`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/12798afb447fdc4a24998982e546a7b5334eea03)
+- fix: updated .gitignore to exclude temporary files [`57256ac`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/57256ac7ea82a86b8bf3a08a8f767e0abf4e07d4)
+- build(ci): fix task name for autofix [`e784545`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/e78454533d7ea81da471ea83e615215f8c578014)
+- fix(ci): fix autofix jobs [`3e79e7e`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/3e79e7ebfae0acef316913324cc9ba5e9b018949)
+- build(ci): checkout repo only once [`ecf7494`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/ecf7494a32490227fe31ca25df95fbe24b626f11)
+- modified conflict [`75afd2d`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/75afd2d96080afd378adc6baff4d33dc33fb4ef1)
+- build(deps): add dependabot configuration for ocpp-server [`20e5e16`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/20e5e16ec38052ef88fdcf0879b0877aa3f4b1d8)
+- test: add .gitignore for ocpp-server [`0395ac6`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/0395ac6663d6257d0c9f5f9c0468691721cf6748)
+- refactor(ocpp-server): code formatting [`8430af0`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/8430af0a8ef88806725ab72613f0d2385798e182)
+- test: fix OCPP 2 server startup [`339f65a`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/339f65ad177a26f0c75dab3da066638ffcd7c44d)
+- test(ocpp-server): add heartbeart command handler [`115f3b1`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/115f3b177307e3a152a556db843653a499a5fe4c)
+- refactor: refine OCPP 2 mock server defaults [`dd4588b`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/dd4588bbff2b31d206367724d0aa843ecc7ef7c6)
+- test(ocpp-server): add StatusNotification handler [`65c0600`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/65c0600c2ca47b47559d3d9e7bc5e56b272dc615)
+- chore: bump volta node version [`b89f8c8`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/b89f8c8293de89983b80f4296037b2ae2652fe91)
+- build(deps): bump sonarsource/sonarcloud-github-action [`45609cf`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/45609cfb6cc764eeb8aa0a74dc41ab2a8d1875ca)
+- docs(ocpp-server): refine README.md [`4c69efe`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/4c69efeacafda3a585d526b1476572746537f8c1)
+- refactor: cleanup dependabot configuration [`8f8f989`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/8f8f989efabf09ced480ebf661b54975dd7225b9)
+- chore: cleanup editorconfig config [`c2e5313`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/c2e53133a6d00f5b64e66a1359f7f244730b9d02)
+- test(ocpp-server): add task to run server [`3a89ffc`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/3a89ffcba5b6eb9e37619f67b56aadfea2ee2a09)
+- build(ci): silence warning at building OCPP mock server [`40f37d8`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/40f37d8ec1d1b46e61c2513d17a4fc30c4a45910)
+- refactor(ocpp-server): refine log message [`950b6c5`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/950b6c5a67672f45330979ff63860886dea62b67)
+- test: align OCPP2 server messages [`e1c2dac`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/e1c2dac9ba7b83ab392f9c1130810a9fb07a8eaf)
+
+## [v1.3.6](https://github.com/sap/e-mobility-charging-stations-simulator/compare/v1.3.5...v1.3.6) (2024-06-10)
 
 - build(deps-dev): apply updates [`01ffb6d`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/01ffb6d3583ab4da138dad815803121f3cc6d336)
 - feat: handle CHARGE_POINT_MAX_PROFILE charging profiles at power [`3579910`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/357991053f9d8910cdfaebde426eca58f813c05f)
@@ -8,6 +258,7 @@
 - refactor: cleanup power limitation code [`21f68e2`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/21f68e222da0b9ac5d43a70b96beaf3f13ff3926)
 - refactor: cleanup charging profiles handling code [`c76d9c8`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/c76d9c83dba681eeccd78dcfae661b085d7ccf2b)
 - fix: ensure no charging profile purpose TxProfile is loaded at startup [`3edfdf5`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/3edfdf53dc3c75bf26b4737bb014e6e98239ef38)
+- chore: version 1.3.6 [`5d42650`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/5d42650b5661ded13bc4a7f5b938f2b914410b18)
 - build(deps-dev): apply updates [`1056f1b`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/1056f1b4cf5e305c45351093cb062d05468c83e8)
 - build: apply volta pnpm update [`c9a92ed`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/c9a92ed7a2ef6d5258f075620b7f4878ba12c454)
 - fix: fix TxProfile removal with transaction id defined at Tx stop [`d020e24`](https://github.com/sap/e-mobility-charging-stations-simulator/commit/d020e249e5206699107d6e63d3d585a7e72e7830)

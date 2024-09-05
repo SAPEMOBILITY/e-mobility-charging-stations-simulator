@@ -1,10 +1,12 @@
 import { type FSWatcher, readFileSync, watch, type WatchListener } from 'node:fs'
 
 import type { FileType, JsonType } from '../types/index.js'
+
 import { handleFileException } from './ErrorUtils.js'
 import { logger } from './Logger.js'
 import { isNotEmptyString } from './Utils.js'
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 export const watchJsonFile = <T extends JsonType>(
   file: string,
   fileType: FileType,
@@ -18,7 +20,7 @@ export const watchJsonFile = <T extends JsonType>(
           (refreshedVariable = JSON.parse(readFileSync(file, 'utf8')) as T)
       } catch (error) {
         handleFileException(file, fileType, error as NodeJS.ErrnoException, logPrefix, {
-          throwError: false
+          throwError: false,
         })
       }
     }
@@ -29,7 +31,7 @@ export const watchJsonFile = <T extends JsonType>(
       return watch(file, listener)
     } catch (error) {
       handleFileException(file, fileType, error as NodeJS.ErrnoException, logPrefix, {
-        throwError: false
+        throwError: false,
       })
     }
   } else {

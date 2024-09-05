@@ -1,28 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { expect } from 'expect'
 import { describe, it } from 'node:test'
 
-import { expect } from 'expect'
-
 import type { ChargingStation } from '../../src/charging-station/index.js'
+
 import {
   FileType,
   GenericStatus,
   IncomingRequestCommand,
   MessageType,
-  RequestCommand
+  RequestCommand,
 } from '../../src/types/index.js'
 import {
   handleFileException,
   handleIncomingRequestError,
   handleSendMessageError,
-  setDefaultErrorParams
 } from '../../src/utils/ErrorUtils.js'
 import { logger } from '../../src/utils/Logger.js'
 
 await describe('ErrorUtils test suite', async () => {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const chargingStation = {
-    logPrefix: () => 'CS-TEST |'
+    logPrefix: () => 'CS-TEST |',
   } as ChargingStation
 
   await it('Verify handleFileException()', t => {
@@ -37,20 +35,20 @@ await describe('ErrorUtils test suite', async () => {
     }).toThrow(error)
     expect(() => {
       handleFileException('path/to/module.js', FileType.Authorization, error, 'log prefix |', {
-        throwError: false
+        throwError: false,
       })
     }).not.toThrow()
     expect(logger.warn.mock.calls.length).toBe(1)
     expect(logger.error.mock.calls.length).toBe(1)
     expect(() => {
       handleFileException('path/to/module.js', FileType.Authorization, error, 'log prefix |', {
-        consoleOut: true
+        consoleOut: true,
       })
     }).toThrow(error)
     expect(() => {
       handleFileException('path/to/module.js', FileType.Authorization, error, 'log prefix |', {
+        consoleOut: true,
         throwError: false,
-        consoleOut: true
       })
     }).not.toThrow()
     expect(console.warn.mock.calls.length).toBe(1)
@@ -91,39 +89,19 @@ await describe('ErrorUtils test suite', async () => {
     }).toThrow(error)
     expect(() => {
       handleIncomingRequestError(chargingStation, IncomingRequestCommand.CLEAR_CACHE, error, {
-        throwError: false
+        throwError: false,
       })
     }).not.toThrow()
     const errorResponse = {
-      status: GenericStatus.Rejected
+      status: GenericStatus.Rejected,
     }
     expect(
       handleIncomingRequestError(chargingStation, IncomingRequestCommand.CLEAR_CACHE, error, {
+        errorResponse,
         throwError: false,
-        errorResponse
       })
     ).toStrictEqual(errorResponse)
     expect(chargingStation.logPrefix.mock.calls.length).toBe(3)
     expect(logger.error.mock.calls.length).toBe(3)
-  })
-
-  await it('Verify setDefaultErrorParams()', () => {
-    expect(setDefaultErrorParams({})).toStrictEqual({ throwError: true, consoleOut: false })
-    expect(setDefaultErrorParams({ throwError: false })).toStrictEqual({
-      throwError: false,
-      consoleOut: false
-    })
-    expect(setDefaultErrorParams({ throwError: false, consoleOut: true })).toStrictEqual({
-      throwError: false,
-      consoleOut: true
-    })
-    expect(setDefaultErrorParams({ throwError: true, consoleOut: true })).toStrictEqual({
-      throwError: true,
-      consoleOut: true
-    })
-    expect(setDefaultErrorParams({}, { throwError: false, consoleOut: false })).toStrictEqual({
-      throwError: false,
-      consoleOut: false
-    })
   })
 })

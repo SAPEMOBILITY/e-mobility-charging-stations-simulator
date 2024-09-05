@@ -17,7 +17,7 @@ import {
   type OCPP20StatusNotificationResponse,
   OCPPVersion,
   RegistrationStatusEnumType,
-  type ResponseHandler
+  type ResponseHandler,
 } from '../../../types/index.js'
 import { isAsyncFunction, logger } from '../../../utils/index.js'
 import { OCPPResponseService } from '../OCPPResponseService.js'
@@ -26,13 +26,12 @@ import { OCPP20ServiceUtils } from './OCPP20ServiceUtils.js'
 const moduleName = 'OCPP20ResponseService'
 
 export class OCPP20ResponseService extends OCPPResponseService {
-  public incomingRequestResponsePayloadValidateFunctions: Map<
-  OCPP20IncomingRequestCommand,
-  ValidateFunction<JsonType>
-  >
-
   protected payloadValidateFunctions: Map<OCPP20RequestCommand, ValidateFunction<JsonType>>
   private readonly responseHandlers: Map<OCPP20RequestCommand, ResponseHandler>
+  public incomingRequestResponsePayloadValidateFunctions: Map<
+    OCPP20IncomingRequestCommand,
+    ValidateFunction<JsonType>
+  >
 
   public constructor () {
     // if (new.target.name === moduleName) {
@@ -42,69 +41,112 @@ export class OCPP20ResponseService extends OCPPResponseService {
     this.responseHandlers = new Map<OCPP20RequestCommand, ResponseHandler>([
       [
         OCPP20RequestCommand.BOOT_NOTIFICATION,
-        this.handleResponseBootNotification.bind(this) as ResponseHandler
+        this.handleResponseBootNotification.bind(this) as ResponseHandler,
       ],
       [OCPP20RequestCommand.HEARTBEAT, this.emptyResponseHandler],
-      [OCPP20RequestCommand.STATUS_NOTIFICATION, this.emptyResponseHandler]
+      [OCPP20RequestCommand.STATUS_NOTIFICATION, this.emptyResponseHandler],
     ])
     this.payloadValidateFunctions = new Map<OCPP20RequestCommand, ValidateFunction<JsonType>>([
       [
         OCPP20RequestCommand.BOOT_NOTIFICATION,
-        this.ajv
-          .compile(
-            OCPP20ServiceUtils.parseJsonSchemaFile<OCPP20BootNotificationResponse>(
-              'assets/json-schemas/ocpp/2.0/BootNotificationResponse.json',
-              moduleName,
-              'constructor'
-            )
+        this.ajv.compile(
+          OCPP20ServiceUtils.parseJsonSchemaFile<OCPP20BootNotificationResponse>(
+            'assets/json-schemas/ocpp/2.0/BootNotificationResponse.json',
+            moduleName,
+            'constructor'
           )
-          .bind(this)
+        ),
       ],
       [
         OCPP20RequestCommand.HEARTBEAT,
-        this.ajv
-          .compile(
-            OCPP20ServiceUtils.parseJsonSchemaFile<OCPP20HeartbeatResponse>(
-              'assets/json-schemas/ocpp/2.0/HeartbeatResponse.json',
-              moduleName,
-              'constructor'
-            )
+        this.ajv.compile(
+          OCPP20ServiceUtils.parseJsonSchemaFile<OCPP20HeartbeatResponse>(
+            'assets/json-schemas/ocpp/2.0/HeartbeatResponse.json',
+            moduleName,
+            'constructor'
           )
-          .bind(this)
+        ),
       ],
       [
         OCPP20RequestCommand.STATUS_NOTIFICATION,
-        this.ajv
-          .compile(
-            OCPP20ServiceUtils.parseJsonSchemaFile<OCPP20StatusNotificationResponse>(
-              'assets/json-schemas/ocpp/2.0/StatusNotificationResponse.json',
-              moduleName,
-              'constructor'
-            )
+        this.ajv.compile(
+          OCPP20ServiceUtils.parseJsonSchemaFile<OCPP20StatusNotificationResponse>(
+            'assets/json-schemas/ocpp/2.0/StatusNotificationResponse.json',
+            moduleName,
+            'constructor'
           )
-          .bind(this)
-      ]
+        ),
+      ],
     ])
     this.incomingRequestResponsePayloadValidateFunctions = new Map<
-    OCPP20IncomingRequestCommand,
-    ValidateFunction<JsonType>
+      OCPP20IncomingRequestCommand,
+      ValidateFunction<JsonType>
     >([
       [
         OCPP20IncomingRequestCommand.CLEAR_CACHE,
-        this.ajvIncomingRequest
-          .compile(
-            OCPP20ServiceUtils.parseJsonSchemaFile<OCPP20ClearCacheResponse>(
-              'assets/json-schemas/ocpp/2.0/ClearCacheResponse.json',
-              moduleName,
-              'constructor'
-            )
+        this.ajvIncomingRequest.compile(
+          OCPP20ServiceUtils.parseJsonSchemaFile<OCPP20ClearCacheResponse>(
+            'assets/json-schemas/ocpp/2.0/ClearCacheResponse.json',
+            moduleName,
+            'constructor'
           )
-          .bind(this)
-      ]
+        ),
+      ],
     ])
     this.validatePayload = this.validatePayload.bind(this)
   }
 
+  private handleResponseBootNotification (
+    chargingStation: ChargingStation,
+    payload: OCPP20BootNotificationResponse
+  ): void {
+    if (Object.values(RegistrationStatusEnumType).includes(payload.status)) {
+      chargingStation.bootNotificationResponse = payload
+      if (chargingStation.isRegistered()) {
+        chargingStation.emit(ChargingStationEvents.registered)
+        if (chargingStation.inAcceptedState()) {
+          addConfigurationKey(
+            chargingStation,
+            OCPP20OptionalVariableName.HeartbeatInterval,
+            payload.interval.toString(),
+            {},
+            { overwrite: true, save: true }
+          )
+          chargingStation.emit(ChargingStationEvents.accepted)
+        }
+      } else if (chargingStation.inRejectedState()) {
+        chargingStation.emit(ChargingStationEvents.rejected)
+      }
+      const logMsg = `${chargingStation.logPrefix()} Charging station in '${
+        payload.status
+      }' state on the central server`
+      payload.status === RegistrationStatusEnumType.REJECTED
+        ? logger.warn(logMsg)
+        : logger.info(logMsg)
+    } else {
+      delete chargingStation.bootNotificationResponse
+      logger.error(
+        `${chargingStation.logPrefix()} Charging station boot notification response received: %j with undefined registration status`,
+        payload
+      )
+    }
+  }
+
+  private validatePayload (
+    chargingStation: ChargingStation,
+    commandName: OCPP20RequestCommand,
+    payload: JsonType
+  ): boolean {
+    if (this.payloadValidateFunctions.has(commandName)) {
+      return this.validateResponsePayload(chargingStation, commandName, payload)
+    }
+    logger.warn(
+      `${chargingStation.logPrefix()} ${moduleName}.validatePayload: No JSON schema validation function found for command '${commandName}' PDU validation`
+    )
+    return false
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
   public async responseHandler<ReqType extends JsonType, ResType extends JsonType>(
     chargingStation: ChargingStation,
     commandName: OCPP20RequestCommand,
@@ -123,7 +165,7 @@ export class OCPP20ResponseService extends OCPPResponseService {
           if (isAsyncFunction(responseHandler)) {
             await responseHandler(chargingStation, payload, requestPayload)
           } else {
-            (
+            ;(
               responseHandler as (
                 chargingStation: ChargingStation,
                 payload: JsonType,
@@ -160,56 +202,6 @@ export class OCPP20ResponseService extends OCPPResponseService {
           2
         )} while the charging station is not registered on the central server`,
         commandName,
-        payload
-      )
-    }
-  }
-
-  private validatePayload (
-    chargingStation: ChargingStation,
-    commandName: OCPP20RequestCommand,
-    payload: JsonType
-  ): boolean {
-    if (this.payloadValidateFunctions.has(commandName)) {
-      return this.validateResponsePayload(chargingStation, commandName, payload)
-    }
-    logger.warn(
-      `${chargingStation.logPrefix()} ${moduleName}.validatePayload: No JSON schema validation function found for command '${commandName}' PDU validation`
-    )
-    return false
-  }
-
-  private handleResponseBootNotification (
-    chargingStation: ChargingStation,
-    payload: OCPP20BootNotificationResponse
-  ): void {
-    if (Object.values(RegistrationStatusEnumType).includes(payload.status)) {
-      chargingStation.bootNotificationResponse = payload
-      if (chargingStation.isRegistered()) {
-        chargingStation.emit(ChargingStationEvents.registered)
-        if (chargingStation.inAcceptedState()) {
-          addConfigurationKey(
-            chargingStation,
-            OCPP20OptionalVariableName.HeartbeatInterval,
-            payload.interval.toString(),
-            {},
-            { overwrite: true, save: true }
-          )
-          chargingStation.emit(ChargingStationEvents.accepted)
-        }
-      } else if (chargingStation.inRejectedState()) {
-        chargingStation.emit(ChargingStationEvents.rejected)
-      }
-      const logMsg = `${chargingStation.logPrefix()} Charging station in '${
-        payload.status
-      }' state on the central server`
-      payload.status === RegistrationStatusEnumType.REJECTED
-        ? logger.warn(logMsg)
-        : logger.info(logMsg)
-    } else {
-      delete chargingStation.bootNotificationResponse
-      logger.error(
-        `${chargingStation.logPrefix()} Charging station boot notification response received: %j with undefined registration status`,
         payload
       )
     }
