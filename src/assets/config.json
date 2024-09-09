@@ -10,8 +10,8 @@
   },
   "worker": {
     "processType": "workerSet",
-    "elementsPerWorker": "all",
-    "elementAddDelay": 2000
+    "elementsPerWorker": 10,
+    "elementStartDelay": 2000
   },
   "uiServer": {
     "enabled": false,
@@ -46,6 +46,10 @@
     },
     {
       "file": "schneider.station-e2e-nogroup-2.json",
+      "numberOfStations": 1
+    },
+    {
+      "file": "schneider.station-e2e-dpp-1.json",
       "numberOfStations": 1
     }
   ]
