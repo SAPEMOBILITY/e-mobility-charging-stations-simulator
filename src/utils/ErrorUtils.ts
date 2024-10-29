@@ -1,9 +1,7 @@
+import chalk from 'chalk'
 import process from 'node:process'
 
-import chalk from 'chalk'
-
 import type { ChargingStation } from '../charging-station/index.js'
-import { getMessageTypeString } from '../charging-station/ocpp/OCPPServiceUtils.js'
 import type {
   EmptyObject,
   FileType,
@@ -11,8 +9,10 @@ import type {
   IncomingRequestCommand,
   JsonType,
   MessageType,
-  RequestCommand
+  RequestCommand,
 } from '../types/index.js'
+
+import { getMessageTypeString } from '../charging-station/ocpp/OCPPServiceUtils.js'
 import { logger } from './Logger.js'
 import { isNotEmptyString } from './Utils.js'
 
@@ -39,22 +39,22 @@ export const handleFileException = (
 ): void => {
   params = {
     ...{
+      consoleOut: false,
       throwError: true,
-      consoleOut: false
     },
-    ...params
+    ...params,
   }
   const prefix = isNotEmptyString(logPrefix) ? `${logPrefix} ` : ''
   let logMsg: string
   switch (error.code) {
-    case 'ENOENT':
-      logMsg = `${fileType} file ${file} not found:`
+    case 'EACCES':
+      logMsg = `${fileType} file ${file} access denied:`
       break
     case 'EEXIST':
       logMsg = `${fileType} file ${file} already exists:`
       break
-    case 'EACCES':
-      logMsg = `${fileType} file ${file} access denied:`
+    case 'ENOENT':
+      logMsg = `${fileType} file ${file} not found:`
       break
     case 'EPERM':
       logMsg = `${fileType} file ${file} permission denied:`
@@ -83,17 +83,17 @@ export const handleFileException = (
 
 export const handleSendMessageError = (
   chargingStation: ChargingStation,
-  commandName: RequestCommand | IncomingRequestCommand,
+  commandName: IncomingRequestCommand | RequestCommand,
   messageType: MessageType,
   error: Error,
   params?: HandleErrorParams<EmptyObject>
 ): void => {
   params = {
     ...{
+      consoleOut: false,
       throwError: false,
-      consoleOut: false
     },
-    ...params
+    ...params,
   }
   logger.error(
     `${chargingStation.logPrefix()} ${moduleName}.handleSendMessageError: Send ${getMessageTypeString(messageType)} command '${commandName}' error:`,
@@ -112,10 +112,10 @@ export const handleIncomingRequestError = <T extends JsonType>(
 ): T | undefined => {
   params = {
     ...{
+      consoleOut: false,
       throwError: true,
-      consoleOut: false
     },
-    ...params
+    ...params,
   }
   logger.error(
     `${chargingStation.logPrefix()} ${moduleName}.handleIncomingRequestError: Incoming request command '${commandName}' error:`,

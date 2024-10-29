@@ -1,8 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto'
 import type { EventEmitter } from 'node:events'
-import { basename, dirname, isAbsolute, join, parse, relative, resolve } from 'node:path'
-import { env } from 'node:process'
-import { fileURLToPath } from 'node:url'
 
 import chalk from 'chalk'
 import {
@@ -18,10 +14,16 @@ import {
   isDate,
   isPast,
   isWithinInterval,
-  toDate
+  toDate,
 } from 'date-fns'
 import { maxTime } from 'date-fns/constants'
+import { hash, randomBytes } from 'node:crypto'
+import { basename, dirname, isAbsolute, join, parse, relative, resolve } from 'node:path'
+import { env } from 'node:process'
+import { fileURLToPath } from 'node:url'
 import { isEmpty } from 'rambda'
+
+import type { ChargingStation } from './ChargingStation.js'
 
 import { BaseError } from '../exception/index.js'
 import {
@@ -52,7 +54,7 @@ import {
   ReservationTerminationReason,
   StandardParametersKey,
   type SupportedFeatureProfiles,
-  Voltage
+  Voltage,
 } from '../types/index.js'
 import {
   ACElectricUtils,
@@ -66,9 +68,8 @@ import {
   isNotEmptyString,
   isValidDate,
   logger,
-  secureRandom
+  secureRandom,
 } from '../utils/index.js'
-import type { ChargingStation } from './ChargingStation.js'
 import { getConfigurationKey } from './ConfigurationKeyUtils.js'
 
 const moduleName = 'Helpers'
@@ -158,24 +159,87 @@ export const getHashId = (index: number, stationTemplate: ChargingStationTemplat
     chargePointModel: stationTemplate.chargePointModel,
     chargePointVendor: stationTemplate.chargePointVendor,
     ...(stationTemplate.chargeBoxSerialNumberPrefix != null && {
-      chargeBoxSerialNumber: stationTemplate.chargeBoxSerialNumberPrefix
+      chargeBoxSerialNumber: stationTemplate.chargeBoxSerialNumberPrefix,
     }),
     ...(stationTemplate.chargePointSerialNumberPrefix != null && {
-      chargePointSerialNumber: stationTemplate.chargePointSerialNumberPrefix
+      chargePointSerialNumber: stationTemplate.chargePointSerialNumberPrefix,
     }),
     ...(stationTemplate.meterSerialNumberPrefix != null && {
-      meterSerialNumber: stationTemplate.meterSerialNumberPrefix
+      meterSerialNumber: stationTemplate.meterSerialNumberPrefix,
     }),
     ...(stationTemplate.meterType != null && {
-      meterType: stationTemplate.meterType
-    })
+      meterType: stationTemplate.meterType,
+    }),
   }
-  return createHash(Constants.DEFAULT_HASH_ALGORITHM)
-    .update(`${JSON.stringify(chargingStationInfo)}${getChargingStationId(index, stationTemplate)}`)
-    .digest('hex')
+  return hash(
+    Constants.DEFAULT_HASH_ALGORITHM,
+    `${JSON.stringify(chargingStationInfo)}${getChargingStationId(index, stationTemplate)}`,
+    'hex'
+  )
 }
 
-export const checkChargingStation = (
+export const validateStationInfo = (chargingStation: ChargingStation): void => {
+  if (chargingStation.stationInfo == null || isEmpty(chargingStation.stationInfo)) {
+    throw new BaseError('Missing charging station information')
+  }
+  if (
+    chargingStation.stationInfo.chargingStationId == null ||
+    isEmpty(chargingStation.stationInfo.chargingStationId.trim())
+  ) {
+    throw new BaseError('Missing chargingStationId in stationInfo properties')
+  }
+  const chargingStationId = chargingStation.stationInfo.chargingStationId
+  if (
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    chargingStation.stationInfo.hashId == null ||
+    isEmpty(chargingStation.stationInfo.hashId.trim())
+  ) {
+    throw new BaseError(`${chargingStationId}: Missing hashId in stationInfo properties`)
+  }
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (chargingStation.stationInfo.templateIndex == null) {
+    throw new BaseError(`${chargingStationId}: Missing templateIndex in stationInfo properties`)
+  }
+  if (chargingStation.stationInfo.templateIndex <= 0) {
+    throw new BaseError(
+      `${chargingStationId}: Invalid templateIndex value in stationInfo properties`
+    )
+  }
+  if (
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    chargingStation.stationInfo.templateName == null ||
+    isEmpty(chargingStation.stationInfo.templateName.trim())
+  ) {
+    throw new BaseError(`${chargingStationId}: Missing templateName in stationInfo properties`)
+  }
+  if (chargingStation.stationInfo.maximumPower == null) {
+    throw new BaseError(`${chargingStationId}: Missing maximumPower in stationInfo properties`)
+  }
+  if (chargingStation.stationInfo.maximumPower <= 0) {
+    throw new RangeError(
+      `${chargingStationId}: Invalid maximumPower value in stationInfo properties`
+    )
+  }
+  if (chargingStation.stationInfo.maximumAmperage == null) {
+    throw new BaseError(`${chargingStationId}: Missing maximumAmperage in stationInfo properties`)
+  }
+  if (chargingStation.stationInfo.maximumAmperage <= 0) {
+    throw new RangeError(
+      `${chargingStationId}: Invalid maximumAmperage value in stationInfo properties`
+    )
+  }
+  switch (chargingStation.stationInfo.ocppVersion) {
+    case OCPPVersion.VERSION_20:
+    case OCPPVersion.VERSION_201:
+      if (chargingStation.evses.size === 0) {
+        throw new BaseError(
+          `${chargingStationId}: OCPP 2.0 or superior requires at least one EVSE defined in the charging station template/configuration`
+        )
+      }
+  }
+}
+
+export const checkChargingStationState = (
   chargingStation: ChargingStation,
   logPrefix: string
 ): boolean => {
@@ -192,14 +256,14 @@ export const getPhaseRotationValue = (
 ): string | undefined => {
   // AC/DC
   if (connectorId === 0 && numberOfPhases === 0) {
-    return `${connectorId}.${ConnectorPhaseRotation.RST}`
+    return `${connectorId.toString()}.${ConnectorPhaseRotation.RST}`
   } else if (connectorId > 0 && numberOfPhases === 0) {
-    return `${connectorId}.${ConnectorPhaseRotation.NotApplicable}`
+    return `${connectorId.toString()}.${ConnectorPhaseRotation.NotApplicable}`
     // AC
   } else if (connectorId >= 0 && numberOfPhases === 1) {
-    return `${connectorId}.${ConnectorPhaseRotation.NotApplicable}`
+    return `${connectorId.toString()}.${ConnectorPhaseRotation.NotApplicable}`
   } else if (connectorId >= 0 && numberOfPhases === 3) {
-    return `${connectorId}.${ConnectorPhaseRotation.RST}`
+    return `${connectorId.toString()}.${ConnectorPhaseRotation.RST}`
   }
 }
 
@@ -289,8 +353,8 @@ export const checkConnectorsConfiguration = (
   templateFile: string
 ): {
   configuredMaxConnectors: number
-  templateMaxConnectors: number
   templateMaxAvailableConnectors: number
+  templateMaxConnectors: number
 } => {
   const configuredMaxConnectors = getConfiguredMaxNumberOfConnectors(stationTemplate)
   checkConfiguredMaxConnectors(configuredMaxConnectors, logPrefix, templateFile)
@@ -309,8 +373,8 @@ export const checkConnectorsConfiguration = (
   }
   return {
     configuredMaxConnectors,
+    templateMaxAvailableConnectors,
     templateMaxConnectors,
-    templateMaxAvailableConnectors
   }
 }
 
@@ -322,7 +386,7 @@ export const checkStationInfoConnectorStatus = (
 ): void => {
   if (connectorStatus.status != null) {
     logger.warn(
-      `${logPrefix} Charging station information from template ${templateFile} with connector id ${connectorId} status configuration defined, undefine it`
+      `${logPrefix} Charging station information from template ${templateFile} with connector id ${connectorId.toString()} status configuration defined, undefine it`
     )
     delete connectorStatus.status
   }
@@ -387,9 +451,10 @@ export const initializeConnectorsMapStatus = (
   for (const connectorId of connectors.keys()) {
     if (connectorId > 0 && connectors.get(connectorId)?.transactionStarted === true) {
       logger.warn(
-        `${logPrefix} Connector id ${connectorId} at initialization has a transaction started with id ${
-          connectors.get(connectorId)?.transactionId
-        }`
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        `${logPrefix} Connector id ${connectorId.toString()} at initialization has a transaction started with id ${connectors
+          .get(connectorId)
+          ?.transactionId?.toString()}`
       )
     }
     if (connectorId === 0) {
@@ -471,43 +536,43 @@ export const createBootNotificationRequest = (
         chargePointModel: stationInfo.chargePointModel,
         chargePointVendor: stationInfo.chargePointVendor,
         ...(stationInfo.chargeBoxSerialNumber != null && {
-          chargeBoxSerialNumber: stationInfo.chargeBoxSerialNumber
+          chargeBoxSerialNumber: stationInfo.chargeBoxSerialNumber,
         }),
         ...(stationInfo.chargePointSerialNumber != null && {
-          chargePointSerialNumber: stationInfo.chargePointSerialNumber
+          chargePointSerialNumber: stationInfo.chargePointSerialNumber,
         }),
         ...(stationInfo.firmwareVersion != null && {
-          firmwareVersion: stationInfo.firmwareVersion
+          firmwareVersion: stationInfo.firmwareVersion,
         }),
         ...(stationInfo.iccid != null && { iccid: stationInfo.iccid }),
         ...(stationInfo.imsi != null && { imsi: stationInfo.imsi }),
         ...(stationInfo.meterSerialNumber != null && {
-          meterSerialNumber: stationInfo.meterSerialNumber
+          meterSerialNumber: stationInfo.meterSerialNumber,
         }),
         ...(stationInfo.meterType != null && {
-          meterType: stationInfo.meterType
-        })
+          meterType: stationInfo.meterType,
+        }),
       } satisfies OCPP16BootNotificationRequest
     case OCPPVersion.VERSION_20:
     case OCPPVersion.VERSION_201:
       return {
-        reason: bootReason,
         chargingStation: {
           model: stationInfo.chargePointModel,
           vendorName: stationInfo.chargePointVendor,
           ...(stationInfo.firmwareVersion != null && {
-            firmwareVersion: stationInfo.firmwareVersion
+            firmwareVersion: stationInfo.firmwareVersion,
           }),
           ...(stationInfo.chargeBoxSerialNumber != null && {
-            serialNumber: stationInfo.chargeBoxSerialNumber
+            serialNumber: stationInfo.chargeBoxSerialNumber,
           }),
           ...((stationInfo.iccid != null || stationInfo.imsi != null) && {
             modem: {
               ...(stationInfo.iccid != null && { iccid: stationInfo.iccid }),
-              ...(stationInfo.imsi != null && { imsi: stationInfo.imsi })
-            }
-          })
-        }
+              ...(stationInfo.imsi != null && { imsi: stationInfo.imsi }),
+            },
+          }),
+        },
+        reason: bootReason,
       } satisfies OCPP20BootNotificationRequest
   }
 }
@@ -517,11 +582,11 @@ export const warnTemplateKeysDeprecation = (
   logPrefix: string,
   templateFile: string
 ): void => {
-  const templateKeys: Array<{ deprecatedKey: string, key?: string }> = [
+  const templateKeys: { deprecatedKey: string; key?: string }[] = [
     { deprecatedKey: 'supervisionUrl', key: 'supervisionUrls' },
     { deprecatedKey: 'authorizationFile', key: 'idTagsFile' },
     { deprecatedKey: 'payloadSchemaValidation', key: 'ocppStrictCompliance' },
-    { deprecatedKey: 'mustAuthorizeAtRemoteStart', key: 'remoteAuthorization' }
+    { deprecatedKey: 'mustAuthorizeAtRemoteStart', key: 'remoteAuthorization' },
   ]
   for (const templateKey of templateKeys) {
     warnDeprecatedTemplateKey(
@@ -556,20 +621,19 @@ export const createSerialNumber = (
   stationTemplate: ChargingStationTemplate,
   stationInfo: ChargingStationInfo,
   params?: {
-    randomSerialNumberUpperCase?: boolean
     randomSerialNumber?: boolean
+    randomSerialNumberUpperCase?: boolean
   }
 ): void => {
   params = {
-    ...{ randomSerialNumberUpperCase: true, randomSerialNumber: true },
-    ...params
+    ...{ randomSerialNumber: true, randomSerialNumberUpperCase: true },
+    ...params,
   }
-  const serialNumberSuffix =
-    params.randomSerialNumber === true
-      ? getRandomSerialNumberSuffix({
-        upperCase: params.randomSerialNumberUpperCase
-      })
-      : ''
+  const serialNumberSuffix = params.randomSerialNumber
+    ? getRandomSerialNumberSuffix({
+      upperCase: params.randomSerialNumberUpperCase,
+    })
+    : ''
   isNotEmptyString(stationTemplate.chargePointSerialNumberPrefix) &&
     (stationInfo.chargePointSerialNumber = `${stationTemplate.chargePointSerialNumberPrefix}${serialNumberSuffix}`)
   isNotEmptyString(stationTemplate.chargeBoxSerialNumberPrefix) &&
@@ -615,11 +679,11 @@ export const hasFeatureProfile = (
 export const getAmperageLimitationUnitDivider = (stationInfo: ChargingStationInfo): number => {
   let unitDivider = 1
   switch (stationInfo.amperageLimitationUnit) {
-    case AmpereUnits.DECI_AMPERE:
-      unitDivider = 10
-      break
     case AmpereUnits.CENTI_AMPERE:
       unitDivider = 100
+      break
+    case AmpereUnits.DECI_AMPERE:
+      unitDivider = 10
       break
     case AmpereUnits.MILLI_AMPERE:
       unitDivider = 1000
@@ -653,9 +717,7 @@ export const getChargingStationChargingProfilesLimit = (
         chargingStation.stationInfo!.maximumPower!
       if (limit > chargingStationMaximumPower) {
         logger.error(
-          `${chargingStation.logPrefix()} ${moduleName}.getChargingStationChargingProfilesLimit: Charging profile id ${
-            chargingProfilesLimit.chargingProfile.chargingProfileId
-          } limit ${limit} is greater than charging station maximum ${chargingStationMaximumPower}: %j`,
+          `${chargingStation.logPrefix()} ${moduleName}.getChargingStationChargingProfilesLimit: Charging profile id ${chargingProfilesLimit.chargingProfile.chargingProfileId.toString()} limit ${limit.toString()} is greater than charging station maximum ${chargingStationMaximumPower.toString()}: %j`,
           chargingProfilesLimit
         )
         return chargingStationMaximumPower
@@ -668,7 +730,6 @@ export const getChargingStationChargingProfilesLimit = (
 /**
  * Gets the connector charging profiles relevant for power limitation shallow cloned
  * and sorted by priorities
- *
  * @param chargingStation - Charging station
  * @param connectorId - Connector id
  * @returns connector charging profiles array
@@ -721,9 +782,7 @@ export const getConnectorChargingProfilesLimit = (
         chargingStation.stationInfo!.maximumPower! / chargingStation.powerDivider!
       if (limit > connectorMaximumPower) {
         logger.error(
-          `${chargingStation.logPrefix()} ${moduleName}.getConnectorChargingProfilesLimit: Charging profile id ${
-            chargingProfilesLimit.chargingProfile.chargingProfileId
-          } limit ${limit} is greater than connector ${connectorId} maximum ${connectorMaximumPower}: %j`,
+          `${chargingStation.logPrefix()} ${moduleName}.getConnectorChargingProfilesLimit: Charging profile id ${chargingProfilesLimit.chargingProfile.chargingProfileId.toString()} limit ${limit.toString()} is greater than connector ${connectorId.toString()} maximum ${connectorMaximumPower.toString()}: %j`,
           chargingProfilesLimit
         )
         return connectorMaximumPower
@@ -737,8 +796,9 @@ const buildChargingProfilesLimit = (
   chargingStation: ChargingStation,
   chargingProfilesLimit: ChargingProfilesLimit
 ): number => {
+  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   const errorMsg = `Unknown ${chargingStation.stationInfo?.currentOutType} currentOutType in charging station information, cannot build charging profiles limit`
-  const { limit, chargingProfile } = chargingProfilesLimit
+  const { chargingProfile, limit } = chargingProfilesLimit
   switch (chargingStation.stationInfo?.currentOutType) {
     case CurrentType.AC:
       return chargingProfile.chargingSchedule.chargingRateUnit === ChargingRateUnitType.WATT
@@ -811,11 +871,11 @@ export const waitChargingStationEvents = async (
 
 const getConfiguredMaxNumberOfConnectors = (stationTemplate: ChargingStationTemplate): number => {
   let configuredMaxNumberOfConnectors = 0
-  if (isNotEmptyArray(stationTemplate.numberOfConnectors)) {
+  if (isNotEmptyArray<number>(stationTemplate.numberOfConnectors)) {
     const numberOfConnectors = stationTemplate.numberOfConnectors
     configuredMaxNumberOfConnectors =
       numberOfConnectors[Math.floor(secureRandom() * numberOfConnectors.length)]
-  } else if (stationTemplate.numberOfConnectors != null) {
+  } else if (typeof stationTemplate.numberOfConnectors === 'number') {
     configuredMaxNumberOfConnectors = stationTemplate.numberOfConnectors
   } else if (stationTemplate.Connectors != null && stationTemplate.Evses == null) {
     configuredMaxNumberOfConnectors =
@@ -843,7 +903,7 @@ const checkConfiguredMaxConnectors = (
 ): void => {
   if (configuredMaxConnectors <= 0) {
     logger.warn(
-      `${logPrefix} Charging station information from template ${templateFile} with ${configuredMaxConnectors} connectors`
+      `${logPrefix} Charging station information from template ${templateFile} with ${configuredMaxConnectors.toString()} connectors`
     )
   }
 }
@@ -900,7 +960,7 @@ const convertDeprecatedTemplateKey = (
 ): void => {
   if (template[deprecatedKey as keyof ChargingStationTemplate] != null) {
     if (key != null) {
-      (template as unknown as Record<string, unknown>)[key] =
+      ;(template as unknown as Record<string, unknown>)[key] =
         template[deprecatedKey as keyof ChargingStationTemplate]
     }
     // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -909,14 +969,13 @@ const convertDeprecatedTemplateKey = (
 }
 
 interface ChargingProfilesLimit {
-  limit: number
   chargingProfile: ChargingProfile
+  limit: number
 }
 
 /**
  * Get the charging profiles limit for a connector
  * Charging profiles shall already be sorted by priorities
- *
  * @param chargingStation -
  * @param connectorId -
  * @param chargingProfiles -
@@ -935,21 +994,21 @@ const getChargingProfilesLimit = (
     const chargingSchedule = chargingProfile.chargingSchedule
     if (chargingSchedule.startSchedule == null) {
       logger.debug(
-        `${chargingStation.logPrefix()} ${moduleName}.getChargingProfilesLimit: Charging profile id ${chargingProfile.chargingProfileId} has no startSchedule defined. Trying to set it to the connector current transaction start date`
+        `${chargingStation.logPrefix()} ${moduleName}.getChargingProfilesLimit: Charging profile id ${chargingProfile.chargingProfileId.toString()} has no startSchedule defined. Trying to set it to the connector current transaction start date`
       )
       // OCPP specifies that if startSchedule is not defined, it should be relative to start of the connector transaction
       chargingSchedule.startSchedule = connectorStatus?.transactionStart
     }
     if (!isDate(chargingSchedule.startSchedule)) {
       logger.warn(
-        `${chargingStation.logPrefix()} ${moduleName}.getChargingProfilesLimit: Charging profile id ${chargingProfile.chargingProfileId} startSchedule property is not a Date instance. Trying to convert it to a Date instance`
+        `${chargingStation.logPrefix()} ${moduleName}.getChargingProfilesLimit: Charging profile id ${chargingProfile.chargingProfileId.toString()} startSchedule property is not a Date instance. Trying to convert it to a Date instance`
       )
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       chargingSchedule.startSchedule = convertToDate(chargingSchedule.startSchedule)!
     }
     if (chargingSchedule.duration == null) {
       logger.debug(
-        `${chargingStation.logPrefix()} ${moduleName}.getChargingProfilesLimit: Charging profile id ${chargingProfile.chargingProfileId} has no duration defined and will be set to the maximum time allowed`
+        `${chargingStation.logPrefix()} ${moduleName}.getChargingProfilesLimit: Charging profile id ${chargingProfile.chargingProfileId.toString()} has no duration defined and will be set to the maximum time allowed`
       )
       // OCPP specifies that if duration is not defined, it should be infinite
       chargingSchedule.duration = differenceInSeconds(maxTime, chargingSchedule.startSchedule)
@@ -970,11 +1029,11 @@ const getChargingProfilesLimit = (
     // Check if the charging profile is active
     if (
       isWithinInterval(currentDate, {
+        end: addSeconds(chargingSchedule.startSchedule, chargingSchedule.duration),
         start: chargingSchedule.startSchedule,
-        end: addSeconds(chargingSchedule.startSchedule, chargingSchedule.duration)
       })
     ) {
-      if (isNotEmptyArray(chargingSchedule.chargingSchedulePeriod)) {
+      if (isNotEmptyArray<ChargingSchedulePeriod>(chargingSchedule.chargingSchedulePeriod)) {
         const chargingSchedulePeriodCompareFn = (
           a: ChargingSchedulePeriod,
           b: ChargingSchedulePeriod
@@ -986,22 +1045,22 @@ const getChargingProfilesLimit = (
           )
         ) {
           logger.warn(
-            `${chargingStation.logPrefix()} ${moduleName}.getChargingProfilesLimit: Charging profile id ${chargingProfile.chargingProfileId} schedule periods are not sorted by start period`
+            `${chargingStation.logPrefix()} ${moduleName}.getChargingProfilesLimit: Charging profile id ${chargingProfile.chargingProfileId.toString()} schedule periods are not sorted by start period`
           )
           chargingSchedule.chargingSchedulePeriod.sort(chargingSchedulePeriodCompareFn)
         }
         // Check if the first schedule period startPeriod property is equal to 0
         if (chargingSchedule.chargingSchedulePeriod[0].startPeriod !== 0) {
           logger.error(
-            `${chargingStation.logPrefix()} ${moduleName}.getChargingProfilesLimit: Charging profile id ${chargingProfile.chargingProfileId} first schedule period start period ${chargingSchedule.chargingSchedulePeriod[0].startPeriod} is not equal to 0`
+            `${chargingStation.logPrefix()} ${moduleName}.getChargingProfilesLimit: Charging profile id ${chargingProfile.chargingProfileId.toString()} first schedule period start period ${chargingSchedule.chargingSchedulePeriod[0].startPeriod.toString()} is not equal to 0`
           )
           continue
         }
         // Handle only one schedule period
         if (chargingSchedule.chargingSchedulePeriod.length === 1) {
           const chargingProfilesLimit: ChargingProfilesLimit = {
+            chargingProfile,
             limit: chargingSchedule.chargingSchedulePeriod[0].limit,
-            chargingProfile
           }
           logger.debug(debugLogMsg, chargingProfilesLimit)
           return chargingProfilesLimit
@@ -1010,7 +1069,7 @@ const getChargingProfilesLimit = (
         // Search for the right schedule period
         for (const [
           index,
-          chargingSchedulePeriod
+          chargingSchedulePeriod,
         ] of chargingSchedule.chargingSchedulePeriod.entries()) {
           // Find the right schedule period
           if (
@@ -1021,8 +1080,8 @@ const getChargingProfilesLimit = (
           ) {
             // Found the schedule period: previous is the correct one
             const chargingProfilesLimit: ChargingProfilesLimit = {
+              chargingProfile: previousActiveChargingProfile ?? chargingProfile,
               limit: previousChargingSchedulePeriod?.limit ?? chargingSchedulePeriod.limit,
-              chargingProfile: previousActiveChargingProfile ?? chargingProfile
             }
             logger.debug(debugLogMsg, chargingProfilesLimit)
             return chargingProfilesLimit
@@ -1040,8 +1099,8 @@ const getChargingProfilesLimit = (
               ) > chargingSchedule.duration)
           ) {
             const chargingProfilesLimit: ChargingProfilesLimit = {
+              chargingProfile,
               limit: chargingSchedulePeriod.limit,
-              chargingProfile
             }
             logger.debug(debugLogMsg, chargingProfilesLimit)
             return chargingProfilesLimit
@@ -1059,7 +1118,7 @@ const getChargingProfilesLimit = (
 export const prepareChargingProfileKind = (
   connectorStatus: ConnectorStatus | undefined,
   chargingProfile: ChargingProfile,
-  currentDate: string | number | Date,
+  currentDate: Date | number | string,
   logPrefix: string
 ): boolean => {
   switch (chargingProfile.chargingProfileKind) {
@@ -1072,7 +1131,7 @@ export const prepareChargingProfileKind = (
     case ChargingProfileKindType.RELATIVE:
       if (chargingProfile.chargingSchedule.startSchedule != null) {
         logger.warn(
-          `${logPrefix} ${moduleName}.prepareChargingProfileKind: Relative charging profile id ${chargingProfile.chargingProfileId} has a startSchedule property defined. It will be ignored or used if the connector has a transaction started`
+          `${logPrefix} ${moduleName}.prepareChargingProfileKind: Relative charging profile id ${chargingProfile.chargingProfileId.toString()} has a startSchedule property defined. It will be ignored or used if the connector has a transaction started`
         )
         delete chargingProfile.chargingSchedule.startSchedule
       }
@@ -1087,7 +1146,7 @@ export const prepareChargingProfileKind = (
 
 export const canProceedChargingProfile = (
   chargingProfile: ChargingProfile,
-  currentDate: string | number | Date,
+  currentDate: Date | number | string,
   logPrefix: string
 ): boolean => {
   if (
@@ -1095,10 +1154,8 @@ export const canProceedChargingProfile = (
     (isValidDate(chargingProfile.validTo) && isAfter(currentDate, chargingProfile.validTo))
   ) {
     logger.debug(
-      `${logPrefix} ${moduleName}.canProceedChargingProfile: Charging profile id ${
-        chargingProfile.chargingProfileId
-      } is not valid for the current date ${
-        isDate(currentDate) ? currentDate.toISOString() : currentDate
+      `${logPrefix} ${moduleName}.canProceedChargingProfile: Charging profile id ${chargingProfile.chargingProfileId.toString()} is not valid for the current date ${
+        isDate(currentDate) ? currentDate.toISOString() : currentDate.toString()
       }`
     )
     return false
@@ -1108,19 +1165,19 @@ export const canProceedChargingProfile = (
     chargingProfile.chargingSchedule.duration == null
   ) {
     logger.error(
-      `${logPrefix} ${moduleName}.canProceedChargingProfile: Charging profile id ${chargingProfile.chargingProfileId} has no startSchedule or duration defined`
+      `${logPrefix} ${moduleName}.canProceedChargingProfile: Charging profile id ${chargingProfile.chargingProfileId.toString()} has no startSchedule or duration defined`
     )
     return false
   }
   if (!isValidDate(chargingProfile.chargingSchedule.startSchedule)) {
     logger.error(
-      `${logPrefix} ${moduleName}.canProceedChargingProfile: Charging profile id ${chargingProfile.chargingProfileId} has an invalid startSchedule date defined`
+      `${logPrefix} ${moduleName}.canProceedChargingProfile: Charging profile id ${chargingProfile.chargingProfileId.toString()} has an invalid startSchedule date defined`
     )
     return false
   }
   if (!Number.isSafeInteger(chargingProfile.chargingSchedule.duration)) {
     logger.error(
-      `${logPrefix} ${moduleName}.canProceedChargingProfile: Charging profile id ${chargingProfile.chargingProfileId} has non integer duration defined`
+      `${logPrefix} ${moduleName}.canProceedChargingProfile: Charging profile id ${chargingProfile.chargingProfileId.toString()} has non integer duration defined`
     )
     return false
   }
@@ -1136,7 +1193,7 @@ const canProceedRecurringChargingProfile = (
     chargingProfile.recurrencyKind == null
   ) {
     logger.error(
-      `${logPrefix} ${moduleName}.canProceedRecurringChargingProfile: Recurring charging profile id ${chargingProfile.chargingProfileId} has no recurrencyKind defined`
+      `${logPrefix} ${moduleName}.canProceedRecurringChargingProfile: Recurring charging profile id ${chargingProfile.chargingProfileId.toString()} has no recurrencyKind defined`
     )
     return false
   }
@@ -1145,7 +1202,7 @@ const canProceedRecurringChargingProfile = (
     chargingProfile.chargingSchedule.startSchedule == null
   ) {
     logger.error(
-      `${logPrefix} ${moduleName}.canProceedRecurringChargingProfile: Recurring charging profile id ${chargingProfile.chargingProfileId} has no startSchedule defined`
+      `${logPrefix} ${moduleName}.canProceedRecurringChargingProfile: Recurring charging profile id ${chargingProfile.chargingProfileId.toString()} has no startSchedule defined`
     )
     return false
   }
@@ -1154,14 +1211,14 @@ const canProceedRecurringChargingProfile = (
 
 /**
  * Adjust recurring charging profile startSchedule to the current recurrency time interval if needed
- *
  * @param chargingProfile -
  * @param currentDate -
  * @param logPrefix -
+ * @returns boolean
  */
 const prepareRecurringChargingProfile = (
   chargingProfile: ChargingProfile,
-  currentDate: string | number | Date,
+  currentDate: Date | number | string,
   logPrefix: string
 ): boolean => {
   const chargingSchedule = chargingProfile.chargingSchedule
@@ -1171,9 +1228,9 @@ const prepareRecurringChargingProfile = (
     case RecurrencyKindType.DAILY:
       recurringInterval = {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        start: chargingSchedule.startSchedule!,
+        end: addDays(chargingSchedule.startSchedule!, 1),
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        end: addDays(chargingSchedule.startSchedule!, 1)
+        start: chargingSchedule.startSchedule!,
       }
       checkRecurringChargingProfileDuration(chargingProfile, recurringInterval, logPrefix)
       if (
@@ -1185,8 +1242,8 @@ const prepareRecurringChargingProfile = (
           differenceInDays(currentDate, recurringInterval.start)
         )
         recurringInterval = {
+          end: addDays(chargingSchedule.startSchedule, 1),
           start: chargingSchedule.startSchedule,
-          end: addDays(chargingSchedule.startSchedule, 1)
         }
         recurringIntervalTranslated = true
       }
@@ -1194,9 +1251,9 @@ const prepareRecurringChargingProfile = (
     case RecurrencyKindType.WEEKLY:
       recurringInterval = {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        start: chargingSchedule.startSchedule!,
+        end: addWeeks(chargingSchedule.startSchedule!, 1),
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        end: addWeeks(chargingSchedule.startSchedule!, 1)
+        start: chargingSchedule.startSchedule!,
       }
       checkRecurringChargingProfileDuration(chargingProfile, recurringInterval, logPrefix)
       if (
@@ -1208,28 +1265,30 @@ const prepareRecurringChargingProfile = (
           differenceInWeeks(currentDate, recurringInterval.start)
         )
         recurringInterval = {
+          end: addWeeks(chargingSchedule.startSchedule, 1),
           start: chargingSchedule.startSchedule,
-          end: addWeeks(chargingSchedule.startSchedule, 1)
         }
         recurringIntervalTranslated = true
       }
       break
     default:
       logger.error(
-        `${logPrefix} ${moduleName}.prepareRecurringChargingProfile: Recurring ${chargingProfile.recurrencyKind} charging profile id ${chargingProfile.chargingProfileId} is not supported`
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        `${logPrefix} ${moduleName}.prepareRecurringChargingProfile: Recurring ${chargingProfile.recurrencyKind} charging profile id ${chargingProfile.chargingProfileId.toString()} is not supported`
       )
   }
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   if (recurringIntervalTranslated && !isWithinInterval(currentDate, recurringInterval!)) {
     logger.error(
       `${logPrefix} ${moduleName}.prepareRecurringChargingProfile: Recurring ${
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         chargingProfile.recurrencyKind
-      } charging profile id ${chargingProfile.chargingProfileId} recurrency time interval [${toDate(
+      } charging profile id ${chargingProfile.chargingProfileId.toString()} recurrency time interval [${toDate(
         recurringInterval?.start as Date
       ).toISOString()}, ${toDate(
         recurringInterval?.end as Date
       ).toISOString()}] has not been properly translated to current date ${
-        isDate(currentDate) ? currentDate.toISOString() : currentDate
+        isDate(currentDate) ? currentDate.toISOString() : currentDate.toString()
       } `
     )
   }
@@ -1245,12 +1304,10 @@ const checkRecurringChargingProfileDuration = (
     logger.warn(
       `${logPrefix} ${moduleName}.checkRecurringChargingProfileDuration: Recurring ${
         chargingProfile.chargingProfileKind
-      } charging profile id ${
-        chargingProfile.chargingProfileId
-      } duration is not defined, set it to the recurrency time interval duration ${differenceInSeconds(
+      } charging profile id ${chargingProfile.chargingProfileId.toString()} duration is not defined, set it to the recurrency time interval duration ${differenceInSeconds(
         interval.end,
         interval.start
-      )}`
+      ).toString()}`
     )
     chargingProfile.chargingSchedule.duration = differenceInSeconds(interval.end, interval.start)
   } else if (
@@ -1259,12 +1316,10 @@ const checkRecurringChargingProfileDuration = (
     logger.warn(
       `${logPrefix} ${moduleName}.checkRecurringChargingProfileDuration: Recurring ${
         chargingProfile.chargingProfileKind
-      } charging profile id ${chargingProfile.chargingProfileId} duration ${
-        chargingProfile.chargingSchedule.duration
-      } is greater than the recurrency time interval duration ${differenceInSeconds(
+      } charging profile id ${chargingProfile.chargingProfileId.toString()} duration ${chargingProfile.chargingSchedule.duration.toString()} is greater than the recurrency time interval duration ${differenceInSeconds(
         interval.end,
         interval.start
-      )}`
+      ).toString()}`
     )
     chargingProfile.chargingSchedule.duration = differenceInSeconds(interval.end, interval.start)
   }
@@ -1275,7 +1330,7 @@ const getRandomSerialNumberSuffix = (params?: {
   upperCase?: boolean
 }): string => {
   const randomSerialNumberSuffix = randomBytes(params?.randomBytesLength ?? 16).toString('hex')
-  if (params?.upperCase === true) {
+  if (params?.upperCase) {
     return randomSerialNumberSuffix.toUpperCase()
   }
   return randomSerialNumberSuffix

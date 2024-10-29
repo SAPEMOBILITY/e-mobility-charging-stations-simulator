@@ -24,10 +24,10 @@ jobs:
   build-ocpp-server:
     strategy:
       matrix:
-        python:
-          - 3.12
-    name: Build OCPP mock server with Python ${{ matrix.python }}
-    runs-on: ubuntu-latest
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: [3.12]
+    name: Build OCPP mock server with Python ${{ matrix.python }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: tests/ocpp-server
@@ -43,13 +43,14 @@ jobs:
       - name: Install Dependencies
         run: poetry install --no-root
       - name: Lint
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python == '3.12' }}
         run: poetry run task lint
   build-simulator:
     needs: [check-secrets]
     strategy:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        node: ['20.x', 'latest']
+        node: ['20.x', '22.x', 'latest']
     name: Build simulator with Node ${{ matrix.node }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -88,7 +89,7 @@ jobs:
         run: pnpm coverage
       - name: SonarCloud Scan
         if: ${{ needs.check-secrets.outputs.sonar-token-exists == 'true' && github.repository == 'sap/e-mobility-charging-stations-simulator' && matrix.os == 'ubuntu-latest' && matrix.node == '20.x' }}
-        uses: sonarsource/sonarcloud-github-action@v2.3.0
+        uses: sonarsource/sonarcloud-github-action@v3.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -97,7 +98,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        node: ['18.x', '20.x', 'latest']
+        node: ['18.x', '20.x', '22.x', 'latest']
     name: Build dashboard with Node ${{ matrix.node }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     defaults:
@@ -139,15 +140,30 @@ jobs:
         run: pnpm coverage
       - name: SonarCloud Scan
         if: ${{ needs.check-secrets.outputs.sonar-token-exists == 'true' && github.repository == 'sap/e-mobility-charging-stations-simulator' && matrix.os == 'ubuntu-latest' && matrix.node == '20.x' }}
-        uses: sonarsource/sonarcloud-github-action@v2.3.0
+        uses: sonarsource/sonarcloud-github-action@v3.1.0
         with:
           projectBaseDir: ui/web
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  build-docker-image:
+  build-simulator-docker-image:
     runs-on: ubuntu-latest
-    name: Build docker image
+    name: Build simulator docker image
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build docker image
+        run: |
+          cd docker
+          make SUBMODULES_INIT=false
+  build-dashboard-docker-image:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui/web
+    name: Build dashboard docker image
     steps:
       - uses: actions/checkout@v4
       - name: Setup Docker Buildx

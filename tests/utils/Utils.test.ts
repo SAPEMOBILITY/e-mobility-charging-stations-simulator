@@ -1,13 +1,14 @@
-import { randomInt } from 'node:crypto'
-import { version } from 'node:process'
-import { describe, it } from 'node:test'
-
 import { hoursToMilliseconds, hoursToSeconds } from 'date-fns'
 import { expect } from 'expect'
 import { CircularBuffer } from 'mnemonist'
+import { randomInt } from 'node:crypto'
+import { version } from 'node:process'
+import { describe, it } from 'node:test'
 import { satisfies } from 'semver'
 
 import type { TimestampedData } from '../../src/types/index.js'
+
+import { runtime, runtimes } from '../../scripts/runtime.js'
 import { Constants } from '../../src/utils/Constants.js'
 import {
   clone,
@@ -20,18 +21,16 @@ import {
   formatDurationSeconds,
   generateUUID,
   getRandomFloat,
-  hasOwnProp,
   insertAt,
   isArraySorted,
   isAsyncFunction,
   isNotEmptyArray,
   isNotEmptyString,
-  isObject,
   isValidDate,
   roundTo,
   secureRandom,
   sleep,
-  validateUUID
+  validateUUID,
 } from '../../src/utils/Utils.js'
 
 await describe('Utils test suite', async () => {
@@ -206,23 +205,6 @@ await describe('Utils test suite', async () => {
     expect(extractTimeSeriesValues(circularBuffer)).toEqual([1.1, 2.2, 3.3])
   })
 
-  await it('Verify isObject()', () => {
-    expect(isObject('test')).toBe(false)
-    expect(isObject(undefined)).toBe(false)
-    expect(isObject(null)).toBe(false)
-    expect(isObject(0)).toBe(false)
-    expect(isObject([])).toBe(false)
-    expect(isObject([0, 1])).toBe(false)
-    expect(isObject(['0', '1'])).toBe(false)
-    expect(isObject({})).toBe(true)
-    expect(isObject({ 1: 1 })).toBe(true)
-    expect(isObject({ 1: '1' })).toBe(true)
-    expect(isObject(new Map())).toBe(true)
-    expect(isObject(new Set())).toBe(true)
-    expect(isObject(new WeakMap())).toBe(true)
-    expect(isObject(new WeakSet())).toBe(true)
-  })
-
   await it('Verify isAsyncFunction()', () => {
     expect(isAsyncFunction(null)).toBe(false)
     expect(isAsyncFunction(undefined)).toBe(false)
@@ -232,7 +214,6 @@ await describe('Utils test suite', async () => {
     expect(isAsyncFunction('')).toBe(false)
     expect(isAsyncFunction([])).toBe(false)
     expect(isAsyncFunction(new Date())).toBe(false)
-    // eslint-disable-next-line prefer-regex-literals
     expect(isAsyncFunction(/[a-z]/i)).toBe(false)
     expect(isAsyncFunction(new Error())).toBe(false)
     expect(isAsyncFunction(new Map())).toBe(false)
@@ -274,17 +255,17 @@ await describe('Utils test suite', async () => {
     expect(isAsyncFunction(async function named () {})).toBe(true)
     class TestClass {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      public testSync (): void {}
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      public async testAsync (): Promise<void> {}
+      public testArrowAsync = async (): Promise<void> => {}
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       public testArrowSync = (): void => {}
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      public testArrowAsync = async (): Promise<void> => {}
+      public static async testStaticAsync (): Promise<void> {}
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       public static testStaticSync (): void {}
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      public static async testStaticAsync (): Promise<void> {}
+      public async testAsync (): Promise<void> {}
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      public testSync (): void {}
     }
     const testClass = new TestClass()
     // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -315,7 +296,7 @@ await describe('Utils test suite', async () => {
     const date = new Date()
     expect(clone(date)).toStrictEqual(date)
     expect(clone(date) === date).toBe(false)
-    if (satisfies(version, '>=21.0.0')) {
+    if (runtime === runtimes.node && satisfies(version, '>=22.0.0')) {
       const url = new URL('https://domain.tld')
       expect(() => clone(url)).toThrowError(new Error('Cannot clone object of unsupported type.'))
     }
@@ -329,22 +310,6 @@ await describe('Utils test suite', async () => {
     expect(() => clone(weakMap)).toThrowError(new Error('#<WeakMap> could not be cloned.'))
     const weakSet = new WeakSet([{ 1: 1 }, { 2: 2 }])
     expect(() => clone(weakSet)).toThrowError(new Error('#<WeakSet> could not be cloned.'))
-  })
-
-  await it('Verify hasOwnProp()', () => {
-    expect(hasOwnProp('test', '')).toBe(false)
-    expect(hasOwnProp(undefined, '')).toBe(false)
-    expect(hasOwnProp(null, '')).toBe(false)
-    expect(hasOwnProp([], '')).toBe(false)
-    expect(hasOwnProp({}, '')).toBe(false)
-    expect(hasOwnProp({ 1: 1 }, 1)).toBe(true)
-    expect(hasOwnProp({ 1: 1 }, '1')).toBe(true)
-    expect(hasOwnProp({ 1: 1 }, 2)).toBe(false)
-    expect(hasOwnProp({ 1: 1 }, '2')).toBe(false)
-    expect(hasOwnProp({ 1: '1' }, '1')).toBe(true)
-    expect(hasOwnProp({ 1: '1' }, 1)).toBe(true)
-    expect(hasOwnProp({ 1: '1' }, '2')).toBe(false)
-    expect(hasOwnProp({ 1: '1' }, 2)).toBe(false)
   })
 
   await it('Verify isNotEmptyString()', () => {
