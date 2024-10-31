@@ -3,6 +3,7 @@
   "supervisionUrlOcppKey": "ocppcentraladdress",
   "idTagsFile": "idtags.json",
   "baseName": "CS-SCHNEIDER-API",
+  "fixedName": true,
   "chargePointModel": "MONOBLOCK",
   "chargePointVendor": "Schneider Electric",
   "chargeBoxSerialNumberPrefix": "EV.2S22P44",
