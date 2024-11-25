@@ -53,11 +53,7 @@
           }
         "
         :shared="true"
-        @clicked="
-          () => {
-            $emit('need-refresh')
-          }
-        "
+        @clicked="$emit('need-refresh')"
       >
         Set Supervision Url
       </ToggleButton>
@@ -131,7 +127,7 @@ import type { ChargingStationData, ConnectorStatus, Status } from '@/types'
 import Button from '@/components/buttons/Button.vue'
 import ToggleButton from '@/components/buttons/ToggleButton.vue'
 import CSConnector from '@/components/charging-stations/CSConnector.vue'
-import { useUIClient } from '@/composables'
+import { deleteFromLocalStorage, getLocalStorage, useUIClient } from '@/composables'
 import { useToast } from 'vue-toast-notification'
 
 const props = defineProps<{
@@ -164,14 +160,14 @@ const getSupervisionUrl = (): string => {
 }
 const getWSState = (): string => {
   switch (props.chargingStation?.wsState) {
+    case WebSocket.CLOSED:
+      return 'Closed'
+    case WebSocket.CLOSING:
+      return 'Closing'
     case WebSocket.CONNECTING:
       return 'Connecting'
     case WebSocket.OPEN:
       return 'Open'
-    case WebSocket.CLOSING:
-      return 'Closing'
-    case WebSocket.CLOSED:
-      return 'Closed'
     default:
       return 'Ø'
   }
@@ -229,6 +225,11 @@ const deleteChargingStation = (): void => {
   uiClient
     .deleteChargingStation(props.chargingStation.stationInfo.hashId)
     .then(() => {
+      for (const key in getLocalStorage()) {
+        if (key.includes(props.chargingStation.stationInfo.hashId)) {
+          deleteFromLocalStorage(key)
+        }
+      }
       return $toast.success('Charging station successfully deleted')
     })
     .catch((error: Error) => {

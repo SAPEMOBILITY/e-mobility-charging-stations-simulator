@@ -3,7 +3,7 @@ import { existsSync, type FSWatcher, readFileSync, watch } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { env } from 'node:process'
 import { fileURLToPath } from 'node:url'
-import { mergeDeepRight, once } from 'rambda'
+import { has, mergeDeepRight, once } from 'rambda'
 
 import {
   ApplicationProtocol,
@@ -35,7 +35,7 @@ import {
   logPrefix,
 } from './ConfigurationUtils.js'
 import { Constants } from './Constants.js'
-import { hasOwnProp, isCFEnvironment } from './Utils.js'
+import { isCFEnvironment } from './Utils.js'
 
 type ConfigurationSectionType =
   | LogConfiguration
@@ -127,45 +127,121 @@ export class Configuration {
     // This is intentional
   }
 
+  public static getConfigurationData (): ConfigurationData | undefined {
+    if (
+      Configuration.configurationData == null &&
+      Configuration.configurationFile != null &&
+      Configuration.configurationFile.length > 0
+    ) {
+      try {
+        Configuration.configurationData = JSON.parse(
+          readFileSync(Configuration.configurationFile, 'utf8')
+        ) as ConfigurationData
+        if (Configuration.configurationFileWatcher == null) {
+          Configuration.configurationFileWatcher = Configuration.getConfigurationFileWatcher()
+        }
+      } catch (error) {
+        handleFileException(
+          Configuration.configurationFile,
+          FileType.Configuration,
+          error as NodeJS.ErrnoException,
+          logPrefix()
+        )
+      }
+    }
+    return Configuration.configurationData
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+  public static getConfigurationSection<T extends ConfigurationSectionType>(
+    sectionName: ConfigurationSection
+  ): T {
+    if (!Configuration.isConfigurationSectionCached(sectionName)) {
+      Configuration.cacheConfigurationSection(sectionName)
+    }
+    return Configuration.configurationSectionCache.get(sectionName) as T
+  }
+
+  public static getStationTemplateUrls (): StationTemplateUrl[] | undefined {
+    const checkDeprecatedConfigurationKeysOnce = once(
+      Configuration.checkDeprecatedConfigurationKeys.bind(Configuration)
+    )
+    checkDeprecatedConfigurationKeysOnce()
+    return Configuration.getConfigurationData()?.stationTemplateUrls
+  }
+
+  public static getSupervisionUrlDistribution (): SupervisionUrlDistribution | undefined {
+    return has(Configuration.getConfigurationData(), 'supervisionUrlDistribution')
+      ? Configuration.getConfigurationData()?.supervisionUrlDistribution
+      : SupervisionUrlDistribution.ROUND_ROBIN
+  }
+
+  public static getSupervisionUrls (): string | string[] | undefined {
+    if (
+      Configuration.getConfigurationData()?.['supervisionURLs' as keyof ConfigurationData] != null
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      Configuration.getConfigurationData()!.supervisionUrls = Configuration.getConfigurationData()![
+        'supervisionURLs' as keyof ConfigurationData
+      ] as string | string[]
+    }
+    return Configuration.getConfigurationData()?.supervisionUrls
+  }
+
+  public static workerDynamicPoolInUse (): boolean {
+    return (
+      Configuration.getConfigurationSection<WorkerConfiguration>(ConfigurationSection.worker)
+        .processType === WorkerProcessType.dynamicPool
+    )
+  }
+
+  public static workerPoolInUse (): boolean {
+    return [WorkerProcessType.dynamicPool, WorkerProcessType.fixedPool].includes(
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      Configuration.getConfigurationSection<WorkerConfiguration>(ConfigurationSection.worker)
+        .processType!
+    )
+  }
+
   private static buildLogSection (): LogConfiguration {
     const deprecatedLogConfiguration: LogConfiguration = {
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'logEnabled') && {
+      ...(has('logEnabled', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         enabled: Configuration.getConfigurationData()?.logEnabled,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'logFile') && {
+      ...(has('logFile', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         file: Configuration.getConfigurationData()?.logFile,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'logErrorFile') && {
+      ...(has('logErrorFile', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         errorFile: Configuration.getConfigurationData()?.logErrorFile,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'logStatisticsInterval') && {
+      ...(has('logStatisticsInterval', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         statisticsInterval: Configuration.getConfigurationData()?.logStatisticsInterval,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'logLevel') && {
+      ...(has('logLevel', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         level: Configuration.getConfigurationData()?.logLevel,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'logConsole') && {
+      ...(has('logConsole', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         console: Configuration.getConfigurationData()?.logConsole,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'logFormat') && {
+      ...(has('logFormat', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         format: Configuration.getConfigurationData()?.logFormat,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'logRotate') && {
+      ...(has('logRotate', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         rotate: Configuration.getConfigurationData()?.logRotate,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'logMaxFiles') && {
+      ...(has('logMaxFiles', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         maxFiles: Configuration.getConfigurationData()?.logMaxFiles,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'logMaxSize') && {
+      ...(has('logMaxSize', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         maxSize: Configuration.getConfigurationData()?.logMaxSize,
       }),
@@ -173,7 +249,7 @@ export class Configuration {
     const logConfiguration: LogConfiguration = {
       ...defaultLogConfiguration,
       ...deprecatedLogConfiguration,
-      ...(hasOwnProp(Configuration.getConfigurationData(), ConfigurationSection.log) &&
+      ...(has(ConfigurationSection.log, Configuration.getConfigurationData()) &&
         Configuration.getConfigurationData()?.log),
     }
     return logConfiguration
@@ -182,13 +258,6 @@ export class Configuration {
   private static buildPerformanceStorageSection (): StorageConfiguration {
     let storageConfiguration: StorageConfiguration
     switch (Configuration.getConfigurationData()?.performanceStorage?.type) {
-      case StorageType.SQLITE:
-        storageConfiguration = {
-          enabled: false,
-          type: StorageType.SQLITE,
-          uri: getDefaultPerformanceStorageUri(StorageType.SQLITE),
-        }
-        break
       case StorageType.JSON_FILE:
         storageConfiguration = {
           enabled: false,
@@ -196,12 +265,19 @@ export class Configuration {
           uri: getDefaultPerformanceStorageUri(StorageType.JSON_FILE),
         }
         break
+      case StorageType.SQLITE:
+        storageConfiguration = {
+          enabled: false,
+          type: StorageType.SQLITE,
+          uri: getDefaultPerformanceStorageUri(StorageType.SQLITE),
+        }
+        break
       case StorageType.NONE:
       default:
         storageConfiguration = defaultStorageConfiguration
         break
     }
-    if (hasOwnProp(Configuration.getConfigurationData(), ConfigurationSection.performanceStorage)) {
+    if (has(ConfigurationSection.performanceStorage, Configuration.getConfigurationData())) {
       storageConfiguration = {
         ...storageConfiguration,
         ...Configuration.getConfigurationData()?.performanceStorage,
@@ -221,7 +297,7 @@ export class Configuration {
 
   private static buildUIServerSection (): UIServerConfiguration {
     let uiServerConfiguration: UIServerConfiguration = defaultUIServerConfiguration
-    if (hasOwnProp(Configuration.getConfigurationData(), ConfigurationSection.uiServer)) {
+    if (has(ConfigurationSection.uiServer, Configuration.getConfigurationData())) {
       uiServerConfiguration = mergeDeepRight(
         uiServerConfiguration,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -238,42 +314,42 @@ export class Configuration {
 
   private static buildWorkerSection (): WorkerConfiguration {
     const deprecatedWorkerConfiguration: WorkerConfiguration = {
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'workerProcess') && {
+      ...(has('workerProcess', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         processType: Configuration.getConfigurationData()?.workerProcess,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'workerStartDelay') && {
+      ...(has('workerStartDelay', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         startDelay: Configuration.getConfigurationData()?.workerStartDelay,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'chargingStationsPerWorker') && {
+      ...(has('chargingStationsPerWorker', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         elementsPerWorker: Configuration.getConfigurationData()?.chargingStationsPerWorker,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'elementAddDelay') && {
+      ...(has('elementAddDelay', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         elementAddDelay: Configuration.getConfigurationData()?.elementAddDelay,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData()?.worker, 'elementStartDelay') && {
+      ...(has('elementStartDelay', Configuration.getConfigurationData()?.worker) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         elementAddDelay: Configuration.getConfigurationData()?.worker?.elementStartDelay,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'workerPoolMinSize') && {
+      ...(has('workerPoolMinSize', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         poolMinSize: Configuration.getConfigurationData()?.workerPoolMinSize,
       }),
-      ...(hasOwnProp(Configuration.getConfigurationData(), 'workerPoolMaxSize') && {
+      ...(has('workerPoolMaxSize', Configuration.getConfigurationData()) && {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         poolMaxSize: Configuration.getConfigurationData()?.workerPoolMaxSize,
       }),
     }
-    hasOwnProp(Configuration.getConfigurationData(), 'workerPoolStrategy') &&
+    has('workerPoolStrategy', Configuration.getConfigurationData()) &&
       // eslint-disable-next-line @typescript-eslint/no-deprecated
       delete Configuration.getConfigurationData()?.workerPoolStrategy
     const workerConfiguration: WorkerConfiguration = {
       ...defaultWorkerConfiguration,
       ...deprecatedWorkerConfiguration,
-      ...(hasOwnProp(Configuration.getConfigurationData(), ConfigurationSection.worker) &&
+      ...(has(ConfigurationSection.worker, Configuration.getConfigurationData()) &&
         Configuration.getConfigurationData()?.worker),
     }
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -492,38 +568,13 @@ export class Configuration {
       "Use 'uri' instead"
     )
     // uiServer section
-    if (hasOwnProp(Configuration.getConfigurationData(), 'uiWebSocketServer')) {
+    if (has(Configuration.getConfigurationData(), 'uiWebSocketServer')) {
       console.error(
         `${chalk.green(logPrefix())} ${chalk.red(
           `Deprecated configuration section 'uiWebSocketServer' usage. Use '${ConfigurationSection.uiServer}' instead`
         )}`
       )
     }
-  }
-
-  public static getConfigurationData (): ConfigurationData | undefined {
-    if (
-      Configuration.configurationData == null &&
-      Configuration.configurationFile != null &&
-      Configuration.configurationFile.length > 0
-    ) {
-      try {
-        Configuration.configurationData = JSON.parse(
-          readFileSync(Configuration.configurationFile, 'utf8')
-        ) as ConfigurationData
-        if (Configuration.configurationFileWatcher == null) {
-          Configuration.configurationFileWatcher = Configuration.getConfigurationFileWatcher()
-        }
-      } catch (error) {
-        handleFileException(
-          Configuration.configurationFile,
-          FileType.Configuration,
-          error as NodeJS.ErrnoException,
-          logPrefix()
-        )
-      }
-    }
-    return Configuration.configurationData
   }
 
   private static getConfigurationFileWatcher (): FSWatcher | undefined {
@@ -571,42 +622,6 @@ export class Configuration {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-  public static getConfigurationSection<T extends ConfigurationSectionType>(
-    sectionName: ConfigurationSection
-  ): T {
-    if (!Configuration.isConfigurationSectionCached(sectionName)) {
-      Configuration.cacheConfigurationSection(sectionName)
-    }
-    return Configuration.configurationSectionCache.get(sectionName) as T
-  }
-
-  public static getStationTemplateUrls (): StationTemplateUrl[] | undefined {
-    const checkDeprecatedConfigurationKeysOnce = once(
-      Configuration.checkDeprecatedConfigurationKeys.bind(Configuration)
-    )
-    checkDeprecatedConfigurationKeysOnce()
-    return Configuration.getConfigurationData()?.stationTemplateUrls
-  }
-
-  public static getSupervisionUrlDistribution (): SupervisionUrlDistribution | undefined {
-    return hasOwnProp(Configuration.getConfigurationData(), 'supervisionUrlDistribution')
-      ? Configuration.getConfigurationData()?.supervisionUrlDistribution
-      : SupervisionUrlDistribution.ROUND_ROBIN
-  }
-
-  public static getSupervisionUrls (): string | string[] | undefined {
-    if (
-      Configuration.getConfigurationData()?.['supervisionURLs' as keyof ConfigurationData] != null
-    ) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      Configuration.getConfigurationData()!.supervisionUrls = Configuration.getConfigurationData()![
-        'supervisionURLs' as keyof ConfigurationData
-      ] as string | string[]
-    }
-    return Configuration.getConfigurationData()?.supervisionUrls
-  }
-
   private static isConfigurationSectionCached (sectionName: ConfigurationSection): boolean {
     return Configuration.configurationSectionCache.has(sectionName)
   }
@@ -642,20 +657,5 @@ export class Configuration {
         )}`
       )
     }
-  }
-
-  public static workerDynamicPoolInUse (): boolean {
-    return (
-      Configuration.getConfigurationSection<WorkerConfiguration>(ConfigurationSection.worker)
-        .processType === WorkerProcessType.dynamicPool
-    )
-  }
-
-  public static workerPoolInUse (): boolean {
-    return [WorkerProcessType.dynamicPool, WorkerProcessType.fixedPool].includes(
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      Configuration.getConfigurationSection<WorkerConfiguration>(ConfigurationSection.worker)
-        .processType!
-    )
   }
 }

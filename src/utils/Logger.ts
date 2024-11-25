@@ -1,8 +1,8 @@
 import type { FormatWrap } from 'logform'
 
 import { createLogger, format, type transport } from 'winston'
-import TransportType from 'winston/lib/winston/transports/index.js'
 import DailyRotateFile from 'winston-daily-rotate-file'
+import TransportType from 'winston/lib/winston/transports/index.js'
 
 import { ConfigurationSection, type LogConfiguration } from '../types/index.js'
 import { Configuration } from './Configuration.js'
@@ -47,7 +47,7 @@ if (logConfiguration.rotate === true) {
   ]
 }
 
-export const logger = createLogger({
+const logger = createLogger({
   format: format.combine(
     format.splat(),
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -73,3 +73,5 @@ if (logConfiguration.console === true) {
     })
   )
 }
+
+export { logger }

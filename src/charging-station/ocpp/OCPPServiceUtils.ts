@@ -270,14 +270,14 @@ export const ajvErrorsToErrorType = (errors: ErrorObject[] | null | undefined): 
   if (isNotEmptyArray(errors)) {
     for (const error of errors) {
       switch (error.keyword) {
-        case 'type':
-          return ErrorType.TYPE_CONSTRAINT_VIOLATION
         case 'dependencies':
         case 'required':
           return ErrorType.OCCURRENCE_CONSTRAINT_VIOLATION
-        case 'pattern':
         case 'format':
+        case 'pattern':
           return ErrorType.PROPERTY_CONSTRAINT_VIOLATION
+        case 'type':
+          return ErrorType.TYPE_CONSTRAINT_VIOLATION
       }
     }
   }
@@ -1146,15 +1146,18 @@ const getLimitFromSampledValueTemplateCustomValue = (
   if (options.limitationEnabled) {
     return max(
       min(
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        (!isNaN(parsedValue) ? parsedValue : Number.POSITIVE_INFINITY) * options.unitMultiplier!,
+        (!Number.isNaN(parsedValue) ? parsedValue : Number.POSITIVE_INFINITY) *
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          options.unitMultiplier!,
         maxLimit
       ),
       minLimit
     )
   }
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  return (!isNaN(parsedValue) ? parsedValue : options.fallbackValue!) * options.unitMultiplier!
+  return (
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    (!Number.isNaN(parsedValue) ? parsedValue : options.fallbackValue!) * options.unitMultiplier!
+  )
 }
 
 const getSampledValueTemplate = (
@@ -1296,25 +1299,13 @@ const getMeasurandDefaultLocation = (
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class OCPPServiceUtils {
-  protected static buildSampledValue = buildSampledValue
   public static readonly buildTransactionEndMeterValue = buildTransactionEndMeterValue
-  protected static getSampledValueTemplate = getSampledValueTemplate
   public static readonly isIdTagAuthorized = isIdTagAuthorized
-  private static readonly logPrefix = (
-    ocppVersion: OCPPVersion,
-    moduleName?: string,
-    methodName?: string
-  ): string => {
-    const logMsg =
-      isNotEmptyString(moduleName) && isNotEmptyString(methodName)
-        ? ` OCPP ${ocppVersion} | ${moduleName}.${methodName}:`
-        : ` OCPP ${ocppVersion} |`
-    return logPrefix(logMsg)
-  }
-
   public static readonly restoreConnectorStatus = restoreConnectorStatus
-
   public static readonly sendAndSetConnectorStatus = sendAndSetConnectorStatus
+
+  protected static buildSampledValue = buildSampledValue
+  protected static getSampledValueTemplate = getSampledValueTemplate
 
   protected constructor () {
     // This is intentional
@@ -1413,5 +1404,17 @@ export class OCPPServiceUtils {
       )
       return {} as JSONSchemaType<T>
     }
+  }
+
+  private static readonly logPrefix = (
+    ocppVersion: OCPPVersion,
+    moduleName?: string,
+    methodName?: string
+  ): string => {
+    const logMsg =
+      isNotEmptyString(moduleName) && isNotEmptyString(methodName)
+        ? ` OCPP ${ocppVersion} | ${moduleName}.${methodName}:`
+        : ` OCPP ${ocppVersion} |`
+    return logPrefix(logMsg)
   }
 }
